@@ -1,0 +1,2748 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Интерактивный туториал: Индексы в базах данных</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/npm/fontsource-inter@5.1.1/300.css');
+  @import url('https://cdn.jsdelivr.net/npm/fontsource-inter@5.1.1/400.css');
+  @import url('https://cdn.jsdelivr.net/npm/fontsource-inter@5.1.1/500.css');
+  @import url('https://cdn.jsdelivr.net/npm/fontsource-inter@5.1.1/600.css');
+  @import url('https://cdn.jsdelivr.net/npm/fontsource-inter@5.1.1/700.css');
+  @import url('https://cdn.jsdelivr.net/npm/fontsource-inter@5.1.1/800.css');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #2563eb;
+    --primary-light: #3b82f6;
+    --primary-dark: #1d4ed8;
+    --accent: #06b6d4;
+    --accent-light: #22d3ee;
+    --success: #10b981;
+    --success-bg: #d1fae5;
+    --error: #ef4444;
+    --error-bg: #fee2e2;
+    --warning: #f59e0b;
+    --warning-bg: #fef3c7;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --gray-900: #0f172a;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 6px rgba(0,0,0,0.06), 0 10px 30px rgba(0,0,0,0.08);
+    --shadow-xl: 0 10px 40px rgba(0,0,0,0.12);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--gray-900) 0%, #1e3a5f 50%, var(--primary-dark) 100%);
+    color: white;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header-title {
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .header-title svg { flex-shrink: 0; }
+
+  .progress-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--gray-300);
+  }
+
+  .progress-bar {
+    width: 200px;
+    height: 6px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    border-radius: 3px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0%;
+  }
+
+  /* Layout */
+  .layout {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: white;
+    border-right: 1px solid var(--gray-200);
+    padding: 24px 0;
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 2px; }
+
+  .sidebar-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--gray-400);
+    padding: 16px 24px 8px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--gray-600);
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+    position: relative;
+  }
+
+  .nav-item:hover {
+    background: var(--gray-50);
+    color: var(--gray-800);
+  }
+
+  .nav-item.active {
+    background: linear-gradient(90deg, rgba(37,99,235,0.06), transparent);
+    color: var(--primary);
+    border-left-color: var(--primary);
+    font-weight: 600;
+  }
+
+  .nav-item.completed::after {
+    content: '✓';
+    position: absolute;
+    right: 16px;
+    color: var(--success);
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .nav-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+    transition: all 0.3s;
+  }
+
+  .nav-item.active .nav-number {
+    background: var(--primary);
+    color: white;
+  }
+
+  .nav-item.completed .nav-number {
+    background: var(--success);
+    color: white;
+  }
+
+  /* Main Content */
+  .main-content {
+    padding: 32px 48px 80px;
+    max-width: 840px;
+  }
+
+  /* Sections */
+  .section {
+    display: none;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .section.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    letter-spacing: 0.3px;
+  }
+
+  .badge-intro { background: #dbeafe; color: #1e40af; }
+  .badge-type { background: #d1fae5; color: #065f46; }
+  .badge-criteria { background: #fef3c7; color: #92400e; }
+  .badge-quiz { background: #ede9fe; color: #5b21b6; }
+  .badge-summary { background: #fce7f3; color: #9d174d; }
+
+  .section-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--gray-900);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .section-subtitle {
+    font-size: 17px;
+    color: var(--gray-500);
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+
+  h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 28px 0 12px;
+  }
+
+  h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin: 20px 0 8px;
+  }
+
+  p {
+    margin-bottom: 16px;
+    color: var(--gray-700);
+  }
+
+  /* Cards */
+  .card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.2s;
+  }
+
+  .card:hover { box-shadow: var(--shadow-lg); }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .card-icon.blue { background: #dbeafe; color: var(--primary); }
+  .card-icon.green { background: #d1fae5; color: #059669; }
+  .card-icon.orange { background: #ffedd5; color: #ea580c; }
+  .card-icon.purple { background: #ede9fe; color: #7c3aed; }
+  .card-icon.cyan { background: #cffafe; color: #0891b2; }
+  .card-icon.pink { background: #fce7f3; color: #db2777; }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gray-800);
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--gray-500);
+    margin: 0;
+  }
+
+  /* Code blocks */
+  .code-block {
+    background: var(--gray-900);
+    color: #e2e8f0;
+    border-radius: var(--radius-sm);
+    padding: 20px 24px;
+    margin: 16px 0;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 13.5px;
+    line-height: 1.7;
+    position: relative;
+  }
+
+  .code-label {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gray-500);
+    font-weight: 600;
+  }
+
+  .code-block .kw { color: #c084fc; }
+  .code-block .fn { color: #67e8f9; }
+  .code-block .str { color: #86efac; }
+  .code-block .cm { color: #64748b; font-style: italic; }
+  .code-block .num { color: #fbbf24; }
+  .code-block .op { color: #f472b6; }
+
+  /* Info boxes */
+  .info-box {
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .info-box svg { flex-shrink: 0; margin-top: 2px; }
+
+  .info-box.tip { background: #eff6ff; border-left: 4px solid var(--primary); }
+  .info-box.warning { background: #fffbeb; border-left: 4px solid var(--warning); }
+  .info-box.success { background: #ecfdf5; border-left: 4px solid var(--success); }
+  .info-box.danger { background: #fef2f2; border-left: 4px solid var(--error); }
+
+  .info-box p { margin: 0; font-size: 14px; }
+  .info-box strong { font-weight: 600; }
+
+  /* Diagram containers */
+  .diagram-container {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 20px 0;
+    text-align: center;
+  }
+
+  .diagram-container svg { max-width: 100%; height: auto; }
+
+  /* Quiz */
+  .quiz-container {
+    background: white;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin: 24px 0;
+    box-shadow: var(--shadow);
+  }
+
+  .quiz-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .quiz-badge {
+    background: #ede9fe;
+    color: #7c3aed;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .quiz-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0;
+  }
+
+  .quiz-question {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .quiz-options { display: flex; flex-direction: column; gap: 10px; }
+
+  .quiz-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    color: var(--gray-700);
+  }
+
+  .quiz-option:hover:not(.disabled) {
+    border-color: var(--primary-light);
+    background: #f0f7ff;
+  }
+
+  .quiz-option .option-letter {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .quiz-option.correct {
+    border-color: var(--success);
+    background: var(--success-bg);
+  }
+
+  .quiz-option.correct .option-letter {
+    background: var(--success);
+    color: white;
+  }
+
+  .quiz-option.incorrect {
+    border-color: var(--error);
+    background: var(--error-bg);
+  }
+
+  .quiz-option.incorrect .option-letter {
+    background: var(--error);
+    color: white;
+  }
+
+  .quiz-option.disabled { cursor: default; }
+
+  .quiz-explanation {
+    margin-top: 16px;
+    padding: 16px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    line-height: 1.6;
+    display: none;
+  }
+
+  .quiz-explanation.show { display: block; animation: fadeIn 0.3s ease; }
+  .quiz-explanation.correct-exp { background: var(--success-bg); border: 1px solid #a7f3d0; }
+  .quiz-explanation.incorrect-exp { background: var(--error-bg); border: 1px solid #fecaca; }
+
+  .quiz-explanation strong { display: block; margin-bottom: 4px; }
+
+  /* Comparison table */
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+
+  .comparison-table th {
+    background: var(--gray-100);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--gray-700);
+    border-bottom: 2px solid var(--gray-200);
+    font-size: 13px;
+  }
+
+  .comparison-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray-100);
+    color: var(--gray-700);
+    vertical-align: top;
+  }
+
+  .comparison-table tr:hover td { background: var(--gray-50); }
+
+  .comparison-table .check { color: var(--success); font-weight: 700; }
+  .comparison-table .cross { color: var(--error); font-weight: 700; }
+
+  /* Decision flow */
+  .flow-item {
+    display: flex;
+    gap: 16px;
+    padding: 16px 0;
+    position: relative;
+  }
+
+  .flow-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 52px;
+    bottom: -4px;
+    width: 2px;
+    background: var(--gray-200);
+  }
+
+  .flow-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .flow-content h4 { margin: 0 0 4px; font-size: 15px; }
+  .flow-content p { margin: 0; font-size: 14px; color: var(--gray-600); }
+
+  /* Navigation buttons */
+  .nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--gray-200);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(37,99,235,0.4);
+  }
+
+  .btn-secondary {
+    background: white;
+    color: var(--gray-600);
+    border: 1px solid var(--gray-300);
+  }
+
+  .btn-secondary:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-400);
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  /* Hero section */
+  .hero {
+    text-align: center;
+    padding: 40px 0 32px;
+  }
+
+  .hero-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 32px rgba(37,99,235,0.3);
+  }
+
+  .hero h1 {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--gray-900);
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .hero p {
+    font-size: 17px;
+    color: var(--gray-500);
+    max-width: 600px;
+    margin: 0 auto 32px;
+  }
+
+  .hero-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 32px 0;
+  }
+
+  .hero-feature {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: left;
+    transition: all 0.2s;
+  }
+
+  .hero-feature:hover {
+    border-color: var(--primary-light);
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+  }
+
+  .hero-feature-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  .hero-feature h4 { margin: 0 0 4px; font-size: 14px; }
+  .hero-feature p { margin: 0; font-size: 13px; color: var(--gray-500); }
+
+  /* Highlight list */
+  .highlight-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .highlight-list li {
+    padding: 10px 0;
+    padding-left: 28px;
+    position: relative;
+    font-size: 15px;
+    color: var(--gray-700);
+  }
+
+  .highlight-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 16px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+  }
+
+  /* Score display */
+  .score-display {
+    text-align: center;
+    padding: 32px;
+    background: linear-gradient(135deg, #ede9fe, #dbeafe);
+    border-radius: var(--radius);
+    margin: 24px 0;
+  }
+
+  .score-number {
+    font-size: 48px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .score-label {
+    font-size: 14px;
+    color: var(--gray-600);
+    margin-top: 4px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    background: var(--gray-100);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    overflow-x: auto;
+  }
+
+  .tab {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--gray-500);
+    white-space: nowrap;
+    border: none;
+    background: none;
+    font-family: inherit;
+  }
+
+  .tab:hover { color: var(--gray-700); }
+
+  .tab.active {
+    background: white;
+    color: var(--primary);
+    box-shadow: var(--shadow);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+
+  /* Interactive demo */
+  .demo-container {
+    background: var(--gray-900);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 20px 0;
+    color: #e2e8f0;
+  }
+
+  .demo-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent-light);
+    margin-bottom: 16px;
+  }
+
+  .demo-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .demo-table th {
+    background: rgba(255,255,255,0.08);
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--gray-400);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .demo-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .demo-table tr.highlight-row td {
+    background: rgba(37,99,235,0.2);
+    color: var(--accent-light);
+  }
+
+  .demo-controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .demo-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    color: #e2e8f0;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .demo-btn:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.3);
+  }
+
+  .demo-btn.active-btn {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+  }
+
+  .demo-result {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 60px;
+  }
+
+  .demo-result .scan-count {
+    color: var(--warning);
+    font-weight: 700;
+  }
+
+  .demo-result .found {
+    color: var(--success);
+    font-weight: 700;
+  }
+
+  /* Summary checklist */
+  .checklist {
+    list-style: none;
+    padding: 0;
+  }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 14px;
+  }
+
+  .checklist li:last-child { border-bottom: none; }
+
+  .checklist .check-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--success-bg);
+    color: var(--success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* Mobile sidebar toggle */
+  .sidebar-toggle {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--shadow-xl);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 150;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: -300px;
+      top: 0;
+      height: 100vh;
+      z-index: 160;
+      transition: left 0.3s ease;
+      width: 280px;
+      padding-top: 70px;
+    }
+
+    .sidebar.open { left: 0; }
+    .sidebar-overlay.open { display: block; }
+    .sidebar-toggle { display: flex; }
+
+    .main-content {
+      padding: 24px 16px 80px;
+    }
+
+    .section-title { font-size: 24px; }
+    .hero h1 { font-size: 28px; }
+    .hero-features { grid-template-columns: 1fr; }
+    .progress-bar { width: 120px; }
+    .header-title span { display: none; }
+  }
+
+  @media (max-width: 480px) {
+    .header-inner { padding: 12px 16px; }
+    .progress-bar { width: 80px; }
+    .nav-buttons { flex-direction: column; gap: 12px; }
+    .nav-buttons .btn { width: 100%; justify-content: center; }
+  }
+
+  /* Print styles */
+  @media print {
+    .header, .sidebar, .nav-buttons, .sidebar-toggle { display: none !important; }
+    .layout { grid-template-columns: 1fr; }
+    .section { display: block !important; page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-title">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" rx="7" fill="rgba(255,255,255,0.15)"/>
+        <path d="M8 10h12M8 14h12M8 18h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="20" cy="18" r="4" fill="rgba(34,211,238,0.6)" stroke="white" stroke-width="1.5"/>
+        <path d="M19 18l1.5 1.5L22 17" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Индексы БД — Интерактивный туториал</span>
+    </div>
+    <div class="progress-container">
+      <span id="progressText">0 / 12</span>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Sidebar Toggle (mobile) -->
+<button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Меню">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- Layout -->
+<div class="layout">
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section-title">Начало</div>
+    <div class="nav-item active" data-section="0" onclick="goToSection(0)">
+      <span class="nav-number">1</span> Введение
+    </div>
+    <div class="nav-item" data-section="1" onclick="goToSection(1)">
+      <span class="nav-number">2</span> Что такое индекс?
+    </div>
+
+    <div class="sidebar-section-title">Типы индексов</div>
+    <div class="nav-item" data-section="2" onclick="goToSection(2)">
+      <span class="nav-number">3</span> По одному столбцу
+    </div>
+    <div class="nav-item" data-section="3" onclick="goToSection(3)">
+      <span class="nav-number">4</span> По нескольким столбцам
+    </div>
+    <div class="nav-item" data-section="4" onclick="goToSection(4)">
+      <span class="nav-number">5</span> Вычисляемый столбец
+    </div>
+    <div class="nav-item" data-section="5" onclick="goToSection(5)">
+      <span class="nav-number">6</span> С условием отбора
+    </div>
+    <div class="nav-item" data-section="6" onclick="goToSection(6)">
+      <span class="nav-number">7</span> С включёнными столбцами
+    </div>
+
+    <div class="sidebar-section-title">Принятие решений</div>
+    <div class="nav-item" data-section="7" onclick="goToSection(7)">
+      <span class="nav-number">8</span> Критерии создания индекса
+    </div>
+    <div class="nav-item" data-section="8" onclick="goToSection(8)">
+      <span class="nav-number">9</span> Глубже: селективность
+    </div>
+    <div class="nav-item" data-section="9" onclick="goToSection(9)">
+      <span class="nav-number">10</span> Стоимость индексов
+    </div>
+
+    <div class="sidebar-section-title">Проверка знаний</div>
+    <div class="nav-item" data-section="10" onclick="goToSection(10)">
+      <span class="nav-number">11</span> Итоговый квиз
+    </div>
+    <div class="nav-item" data-section="11" onclick="goToSection(11)">
+      <span class="nav-number">12</span> Заключение
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- SECTION 0: Introduction -->
+    <div class="section active" id="section-0">
+      <div class="hero">
+        <div class="hero-icon">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <path d="M10 12h20M10 20h20M10 28h14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="30" cy="28" r="6" fill="rgba(255,255,255,0.3)" stroke="white" stroke-width="2"/>
+            <path d="M29 28l1.5 1.5L32 27" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h1>Индексы в базах данных</h1>
+        <p>Интерактивный туториал, который поможет понять типы индексов, их особенности и стратегии эффективного использования</p>
+      </div>
+
+      <div class="hero-features">
+        <div class="hero-feature">
+          <div class="hero-feature-icon" style="background:#dbeafe;color:var(--primary);">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5h14M3 10h14M3 15h10"/></svg>
+          </div>
+          <h4>5 типов индексов</h4>
+          <p>От простых до продвинутых с примерами SQL</p>
+        </div>
+        <div class="hero-feature">
+          <div class="hero-feature-icon" style="background:#d1fae5;color:#059669;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 10l4 4 8-8"/></svg>
+          </div>
+          <h4>Критерии выбора</h4>
+          <p>Когда создавать индекс, а когда — нет</p>
+        </div>
+        <div class="hero-feature">
+          <div class="hero-feature-icon" style="background:#ede9fe;color:#7c3aed;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 7v3l2 2"/></svg>
+          </div>
+          <h4>Интерактивные квизы</h4>
+          <p>Проверьте свои знания с пояснениями</p>
+        </div>
+      </div>
+
+      <div class="info-box tip">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5"><circle cx="10" cy="10" r="8"/><path d="M10 10v4M10 7h.01"/></svg>
+        <div>
+          <p><strong>Совет:</strong> используйте боковое меню для навигации между разделами. Прогресс сохраняется автоматически.</p>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <div></div>
+        <button class="btn btn-primary" onclick="goToSection(1)">
+          Начать обучение
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SECTION 1: What is an index -->
+    <div class="section" id="section-1">
+      <span class="section-badge badge-intro">📖 Основы</span>
+      <h2 class="section-title">Что такое индекс?</h2>
+      <p class="section-subtitle">Понимание базового принципа работы индексов в базах данных</p>
+
+      <p>Представьте, что вы ищете информацию в книге. Без оглавления вам придётся листать все страницы подряд. С оглавлением — вы мгновенно находите нужную тему.</p>
+
+      <p><strong>Индекс в базе данных работает по такому же принципу</strong> — это отдельная структура данных, которая ускоряет поиск по таблице.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon blue">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="2" width="16" height="18" rx="2"/><path d="M7 6h8M7 10h8M7 14h5"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Аналогия: книга и оглавление</div>
+          </div>
+        </div>
+        <ul class="highlight-list">
+          <li><strong>Таблица</strong> = книга с тысячами страниц</li>
+          <li><strong>Индекс</strong> = оглавление в конце книги</li>
+          <li><strong>Полное сканирование</strong> = листать все страницы (медленно)</li>
+          <li><strong>Поиск по индексу</strong> = найти в оглавлении (быстро)</li>
+        </ul>
+      </div>
+
+      <div class="diagram-container">
+        <svg viewBox="0 0 700 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Left: Full table scan -->
+          <rect x="20" y="10" width="300" height="300" rx="12" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5"/>
+          <text x="170" y="40" text-anchor="middle" font-family="Inter" font-weight="700" font-size="14" fill="#dc2626">Полное сканирование</text>
+          <text x="170" y="60" text-anchor="middle" font-family="Inter" font-size="11" fill="#991b1b">O(n) — медленно</text>
+
+          <!-- Table rows -->
+          <rect x="40" y="75" width="260" height="28" rx="4" fill="white" stroke="#e5e7eb"/>
+          <text x="55" y="94" font-family="Inter" font-size="12" fill="#6b7280">ID=1, Name=Алиса, Age=25</text>
+          <rect x="40" y="107" width="260" height="28" rx="4" fill="white" stroke="#e5e7eb"/>
+          <text x="55" y="126" font-family="Inter" font-size="12" fill="#6b7280">ID=2, Name=Борис, Age=32</text>
+          <rect x="40" y="139" width="260" height="28" rx="4" fill="white" stroke="#e5e7eb"/>
+          <text x="55" y="158" font-family="Inter" font-size="12" fill="#6b7280">ID=3, Name=Виктор, Age=28</text>
+          <rect x="40" y="171" width="260" height="28" rx="4" fill="white" stroke="#e5e7eb"/>
+          <text x="55" y="190" font-family="Inter" font-size="12" fill="#6b7280">ID=4, Name=Галина, Age=45</text>
+          <rect x="40" y="203" width="260" height="28" rx="4" fill="white" stroke="#e5e7eb"/>
+          <text x="55" y="222" font-family="Inter" font-size="12" fill="#6b7280">ID=5, Name=Дмитрий, Age=38</text>
+          <rect x="40" y="235" width="260" height="28" rx="4" fill="white" stroke="#e5e7eb"/>
+          <text x="55" y="254" font-family="Inter" font-size="12" fill="#6b7280">ID=6, Name=Елена, Age=41</text>
+
+          <!-- Magnifying glass over all rows -->
+          <path d="M290 160 L310 180" stroke="#ef4444" stroke-width="3" stroke-linecap="round" opacity="0.4"/>
+          <circle cx="250" cy="150" r="30" stroke="#ef4444" stroke-width="2.5" fill="rgba(239,68,68,0.08)" opacity="0.6"/>
+          <line x1="272" y1="172" x2="290" y2="190" stroke="#ef4444" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+
+          <!-- Right: Indexed search -->
+          <rect x="380" y="10" width="300" height="300" rx="12" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5"/>
+          <text x="530" y="40" text-anchor="middle" font-family="Inter" font-weight="700" font-size="14" fill="#059669">Поиск по индексу</text>
+          <text x="530" y="60" text-anchor="middle" font-family="Inter" font-size="11" fill="#065f46">O(log n) — быстро</text>
+
+          <!-- B-Tree -->
+          <rect x="510" y="80" width="40" height="28" rx="6" fill="#059669" stroke="#047857" stroke-width="1.5"/>
+          <text x="530" y="98" text-anchor="middle" font-family="Inter" font-weight="600" font-size="12" fill="white">38</text>
+
+          <rect x="430" y="130" width="40" height="28" rx="6" fill="#10b981" stroke="#059669" stroke-width="1.5"/>
+          <text x="450" y="148" text-anchor="middle" font-family="Inter" font-weight="600" font-size="12" fill="white">28</text>
+
+          <rect x="590" y="130" width="40" height="28" rx="6" fill="#10b981" stroke="#059669" stroke-width="1.5"/>
+          <text x="610" y="148" text-anchor="middle" font-family="Inter" font-weight="600" font-size="12" fill="white">45</text>
+
+          <rect x="395" y="185" width="36" height="26" rx="5" fill="#34d399"/>
+          <text x="413" y="202" text-anchor="middle" font-family="Inter" font-size="11" fill="white">25</text>
+          <rect x="445" y="185" width="36" height="26" rx="5" fill="#34d399"/>
+          <text x="463" y="202" text-anchor="middle" font-family="Inter" font-size="11" fill="white">32</text>
+          <rect x="575" y="185" width="36" height="26" rx="5" fill="#34d399"/>
+          <text x="593" y="202" text-anchor="middle" font-family="Inter" font-size="11" fill="white">41</text>
+          <rect x="625" y="185" width="36" height="26" rx="5" fill="#34d399"/>
+          <text x="643" y="202" text-anchor="middle" font-family="Inter" font-size="11" fill="white">45</text>
+
+          <!-- Lines -->
+          <line x1="530" y1="108" x2="450" y2="130" stroke="#059669" stroke-width="1.5"/>
+          <line x1="530" y1="108" x2="610" y2="130" stroke="#059669" stroke-width="1.5"/>
+          <line x1="450" y1="158" x2="413" y2="185" stroke="#10b981" stroke-width="1.5"/>
+          <line x1="450" y1="158" x2="463" y2="185" stroke="#10b981" stroke-width="1.5"/>
+          <line x1="610" y1="158" x2="593" y2="185" stroke="#10b981" stroke-width="1.5"/>
+          <line x1="610" y1="158" x2="643" y2="185" stroke="#10b981" stroke-width="1.5"/>
+
+          <!-- Arrow to target -->
+          <line x1="450" y1="211" x2="450" y2="260" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 3"/>
+          <polygon points="445,255 450,265 455,255" fill="#f59e0b"/>
+
+          <rect x="400" y="268" width="100" height="28" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="450" y="286" text-anchor="middle" font-family="Inter" font-weight="600" font-size="12" fill="#92400e">Виктор, 28</text>
+        </svg>
+        <p style="font-size:13px;color:var(--gray-500);margin-top:12px;margin-bottom:0;">Слева: полный перебор всех строк. Справа: B-дерево позволяет найти значение за O(log n) шагов</p>
+      </div>
+
+      <div class="info-box warning">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--warning)" stroke-width="1.5"><path d="M10 2L18 17H2z"/><path d="M10 8v4M10 15h.01"/></svg>
+        <div>
+          <p><strong>Важно понимать:</strong> индексы ускоряют <strong>чтение</strong>, но замедляют <strong>запись</strong>. При каждой вставке, обновлении или удалении данных индекс должен быть обновлён. Это главный компромисс при использовании индексов.</p>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="goToSection(0)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>
+          Назад
+        </button>
+        <button class="btn btn-primary" onclick="goToSection(2)">
+          Типы индексов
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SECTION 2: Single Column Index -->
+    <div class="section" id="section-2">
+      <span class="section-badge badge-type">🔧 Тип 1</span>
+      <h2 class="section-title">Индекс по одному столбцу</h2>
+      <p class="section-subtitle">Самый простой и распространённый тип индекса</p>
+
+      <p>Индекс по одному столбцу — это базовая структура, которая хранит упорядоченные значения одного столбца вместе с указателями на соответствующие строки таблицы.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon blue">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="3" width="14" height="16" rx="2"/><path d="M8 8h6M8 12h6"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Синтаксис создания</div>
+          </div>
+        </div>
+        <div class="code-block">
+          <span class="code-label">SQL</span>
+<span class="cm">-- Создание индекса по одному столбцу</span>
+<span class="kw">CREATE INDEX</span> idx_employees_email
+<span class="kw">ON</span> employees (email);
+
+<span class="cm">-- Индекс автоматически используется при:</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> employees
+<span class="kw">WHERE</span> email = <span class="str">'ivan@example.com'</span>;
+        </div>
+      </div>
+
+      <h4>Когда использовать:</h4>
+      <ul class="highlight-list">
+        <li>Частые поиски по конкретному значению (WHERE column = value)</li>
+        <li>Сортировка по одному столбцу (ORDER BY column)</li>
+        <li>Группировка по одному столбцу (GROUP BY column)</li>
+        <li>Первичные ключи и уникальные поля (email, логин)</li>
+      </ul>
+
+      <div class="info-box tip">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5"><circle cx="10" cy="10" r="8"/><path d="M10 10v4M10 7h.01"/></svg>
+        <div>
+          <p><strong>Совет:</strong> первичный ключ (PRIMARY KEY) автоматически создаёт уникальный кластеризованный индекс. Вам не нужно создавать его вручную.</p>
+        </div>
+      </div>
+
+      <h4>Пример: таблица сотрудников</h4>
+      <div class="demo-container">
+        <div class="demo-title">Таблица employees</div>
+        <table class="demo-table" id="demoTable1">
+          <thead>
+            <tr>
+              <th>id</th>
+              <th>email</th>
+              <th>department</th>
+              <th>salary</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>alice@co.ru</td><td>IT</td><td>120000</td></tr>
+            <tr><td>2</td><td>bob@co.ru</td><td>HR</td><td>95000</td></tr>
+            <tr><td>3</td><td>charlie@co.ru</td><td>IT</td><td>130000</td></tr>
+            <tr><td>4</td><td>diana@co.ru</td><td>Marketing</td><td>110000</td></tr>
+            <tr><td>5</td><td>eve@co.ru</td><td>IT</td><td>125000</td></tr>
+            <tr><td>6</td><td>frank@co.ru</td><td>HR</td><td>90000</td></tr>
+            <tr><td>7</td><td>grace@co.ru</td><td>IT</td><td>140000</td></tr>
+            <tr><td>8</td><td>henry@co.ru</td><td>Marketing</td><td>105000</td></tr>
+          </tbody>
+        </table>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="runDemo1('noindex')">Без индекса</button>
+          <button class="demo-btn" onclick="runDemo1('withindex')">С индексом (email)</button>
+        </div>
+        <div class="demo-result" id="demoResult1">
+          Нажмите кнопку для демонстрации поиска...
+        </div>
+      </div>
+
+      <!-- Quiz for this section -->
+      <div class="quiz-container" id="quiz-2">
+        <div class="quiz-header">
+          <span class="quiz-badge">Квиз</span>
+          <span class="quiz-title">Проверка понимания</span>
+        </div>
+        <div class="quiz-question">Что произойдёт при выполнении запроса <code>SELECT * FROM employees WHERE email = 'test@mail.ru'</code>, если по столбцу email нет индекса?</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz('quiz-2', this, true)">
+            <span class="option-letter">A</span>
+            <span>БД выполнит полное сканирование таблицы (Sequential Scan), проверяя каждую строку</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-2', this, false)">
+            <span class="option-letter">B</span>
+            <span>Запрос завершится с ошибкой «индекс не найден»</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-2', this, false)">
+            <span class="option-letter">C</span>
+            <span>БД автоматически создаст временный индекс для выполнения запроса</span>
+          </div>
+        </div>
+        <div class="quiz-explanation" id="quiz-2-exp"></div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="goToSection(1)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>
+          Назад
+        </button>
+        <button class="btn btn-primary" onclick="goToSection(3)">
+          Далее: несколько столбцов
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SECTION 3: Multi-column Index -->
+    <div class="section" id="section-3">
+      <span class="section-badge badge-type">🔧 Тип 2</span>
+      <h2 class="section-title">Индекс по нескольким столбцам</h2>
+      <p class="section-subtitle">Композитные индексы для сложных запросов</p>
+
+      <p>Композитный (составной) индекс включает значения нескольких столбцов и упорядочивает строки сначала по первому столбцу, затем по второму и т.д.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon green">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="16" rx="1"/><rect x="12" y="6" width="7" height="13" rx="1"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Синтаксис создания</div>
+          </div>
+        </div>
+        <div class="code-block">
+          <span class="code-label">SQL</span>
+<span class="cm">-- Композитный индекс: сначала department, потом salary</span>
+<span class="kw">CREATE INDEX</span> idx_emp_dept_salary
+<span class="kw">ON</span> employees (department, salary);
+
+<span class="cm">-- Этот индекс эффективен для запросов:</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> employees
+<span class="kw">WHERE</span> department = <span class="str">'IT'</span> <span class="kw">AND</span> salary > <span class="num">100000</span>;
+
+<span class="cm">-- Также работает для поиска только по department:</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> employees
+<span class="kw">WHERE</span> department = <span class="str">'IT'</span>;
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon orange">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M8 11l2 2 4-4"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Правило левого префикса</div>
+          </div>
+        </div>
+        <p style="font-size:14px;color:var(--gray-600);margin:0 0 12px;">Индекс (A, B, C) может использоваться, если запрос фильтрует по:</p>
+        <ul class="highlight-list">
+          <li><strong>A</strong> — да ✅</li>
+          <li><strong>A, B</strong> — да ✅</li>
+          <li><strong>A, B, C</strong> — да ✅</li>
+          <li><strong>B</strong> — нет ❌ (нет левого префикса)</li>
+          <li><strong>B, C</strong> — нет ❌</li>
+          <li><strong>A, C</strong> — частично (только по A) ⚠️</li>
+        </ul>
+      </div>
+
+      <div class="info-box danger">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--error)" stroke-width="1.5"><circle cx="10" cy="10" r="8"/><path d="M7 7l6 6M13 7l-6 6"/></svg>
+        <div>
+          <p><strong>Частая ошибка:</strong> порядок столбцов в композитном индексе критически важен! Индекс (department, salary) и (salary, department) — это <strong>разные</strong> индексы, оптимизированные для разных запросов.</p>
+        </div>
+      </div>
+
+      <div class="demo-container">
+        <div class="demo-title">Как работает правило левого префикса</div>
+        <p style="font-size:13px;color:#94a3b8;margin-bottom:12px;">Индекс: (department, salary) — как книга, отсортированная сначала по отделу, потом по зарплате внутри отдела</p>
+        <table class="demo-table">
+          <thead>
+            <tr><th>department</th><th>salary</th><th>employee</th></tr>
+          </thead>
+          <tbody>
+            <tr class="highlight-row"><td>HR</td><td>85000</td><td>Иванов</td></tr>
+            <tr class="highlight-row"><td>HR</td><td>90000</td><td>Петров</td></tr>
+            <tr class="highlight-row"><td>HR</td><td>95000</td><td>Сидоров</td></tr>
+            <tr><td>IT</td><td>110000</td><td>Козлов</td></tr>
+            <tr><td>IT</td><td>120000</td><td>Новиков</td></tr>
+            <tr><td>IT</td><td>130000</td><td>Морозов</td></tr>
+            <tr><td>IT</td><td>140000</td><td>Волков</td></tr>
+            <tr><td>Marketing</td><td>100000</td><td>Лебедев</td></tr>
+            <tr><td>Marketing</td><td>105000</td><td>Соколов</td></tr>
+          </tbody>
+        </table>
+        <div class="demo-controls">
+          <button class="demo-btn" onclick="runDemo2('dept')">WHERE dept = 'HR'</button>
+          <button class="demo-btn" onclick="runDemo2('dept_salary')">WHERE dept = 'IT' AND salary > 120000</button>
+          <button class="demo-btn" onclick="runDemo2('salary_only')">WHERE salary > 120000</button>
+        </div>
+        <div class="demo-result" id="demoResult2">
+          Выберите запрос для демонстрации...
+        </div>
+      </div>
+
+      <div class="quiz-container" id="quiz-3">
+        <div class="quiz-header">
+          <span class="quiz-badge">Квиз</span>
+          <span class="quiz-title">Проверка понимания</span>
+        </div>
+        <div class="quiz-question">У вас есть индекс (department, salary, hire_date). Какой запрос НЕ сможет полностью использовать этот индекс?</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz('quiz-3', this, false)">
+            <span class="option-letter">A</span>
+            <span>WHERE department = 'IT' AND salary = 100000 AND hire_date > '2020-01-01'</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-3', this, true)">
+            <span class="option-letter">B</span>
+            <span>WHERE salary = 100000 AND hire_date > '2020-01-01'</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-3', this, false)">
+            <span class="option-letter">C</span>
+            <span>WHERE department = 'IT' AND salary = 100000</span>
+          </div>
+        </div>
+        <div class="quiz-explanation" id="quiz-3-exp"></div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="goToSection(2)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>
+          Назад
+        </button>
+        <button class="btn btn-primary" onclick="goToSection(4)">
+          Далее: вычисляемый столбец
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SECTION 4: Computed Column Index -->
+    <div class="section" id="section-4">
+      <span class="section-badge badge-type">🔧 Тип 3</span>
+      <h2 class="section-title">Индекс по вычисляемому столбцу</h2>
+      <p class="section-subtitle">Индексирование результатов выражений и функций</p>
+
+      <p>Иногда нужно искать не по исходному значению, а по результату функции или выражения. Например, поиск без учёта регистра или поиск по вычисленному полю.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon purple">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M9 9h4M9 13h4"/><circle cx="11" cy="11" r="1" fill="currentColor"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Пример: поиск без учёта регистра</div>
+          </div>
+        </div>
+        <div class="code-block">
+          <span class="code-label">PostgreSQL</span>
+<span class="cm">-- Без индекса: функция UPPER() на каждой строке</span>
+<span class="cm">-- это приводит к полному сканированию!</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> users
+<span class="kw">WHERE</span> <span class="fn">UPPER</span>(name) = <span class="str">'ИВАНОВ'</span>;
+
+<span class="cm">-- Создаём индекс по выражению</span>
+<span class="kw">CREATE INDEX</span> idx_users_name_upper
+<span class="kw">ON</span> users (<span class="fn">UPPER</span>(name));
+
+<span class="cm">-- Теперь запрос использует индекс!</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon cyan">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="16" height="16" rx="3"/><path d="M7 11h8M11 7v8"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Другие примеры использования</div>
+          </div>
+        </div>
+        <div class="code-block">
+          <span class="code-label">SQL</span>
+<span class="cm">-- 1. Индекс по году даты</span>
+<span class="kw">CREATE INDEX</span> idx_orders_year
+<span class="kw">ON</span> orders (<span class="fn">EXTRACT</span>(year <span class="kw">FROM</span> order_date));
+
+<span class="cm">-- 2. Индекс по длине строки</span>
+<span class="kw">CREATE INDEX</span> idx_articles_title_len
+<span class="kw">ON</span> articles (<span class="fn">LENGTH</span>(title));
+
+<span class="cm">-- 3. Индекс по JSON-полю (PostgreSQL)</span>
+<span class="kw">CREATE INDEX</span> idx_users_data_email
+<span class="kw">ON</span> users ((data->><span class="str">'email'</span>));
+
+<span class="cm">-- 4. Индекс по географическим координатам</span>
+<span class="kw">CREATE INDEX</span> idx_places_location
+<span class="kw">ON</span> places <span class="kw">USING</span> <span class="fn">gist</span> (location);
+        </div>
+      </div>
+
+      <div class="info-box warning">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--warning)" stroke-width="1.5"><path d="M10 2L18 17H2z"/><path d="M10 8v4M10 15h.01"/></svg>
+        <div>
+          <p><strong>Важно:</strong> в запросе необходимо использовать <strong>то же самое выражение</strong>, что и в определении индекса. Индекс по UPPER(name) не поможет для запроса WHERE name = 'Иванов' — регистры разные!</p>
+        </div>
+      </div>
+
+      <div class="quiz-container" id="quiz-4">
+        <div class="quiz-header">
+          <span class="quiz-badge">Квиз</span>
+          <span class="quiz-title">Проверка понимания</span>
+        </div>
+        <div class="quiz-question">Вы создали индекс <code>ON orders (EXTRACT(year FROM order_date))</code>. Какой запрос будет использовать этот индекс?</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz('quiz-4', this, true)">
+            <span class="option-letter">A</span>
+            <span>SELECT * FROM orders WHERE EXTRACT(year FROM order_date) = 2024</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-4', this, false)">
+            <span class="option-letter">B</span>
+            <span>SELECT * FROM orders WHERE order_date >= '2024-01-01'</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-4', this, false)">
+            <span class="option-letter">C</span>
+            <span>SELECT * FROM orders WHERE YEAR(order_date) = 2024</span>
+          </div>
+        </div>
+        <div class="quiz-explanation" id="quiz-4-exp"></div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="goToSection(3)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>
+          Назад
+        </button>
+        <button class="btn btn-primary" onclick="goToSection(5)">
+          Далее: индекс с условием
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SECTION 5: Partial Index -->
+    <div class="section" id="section-5">
+      <span class="section-badge badge-type">🔧 Тип 4</span>
+      <h2 class="section-title">Индекс с условием отбора</h2>
+      <p class="section-subtitle">Частичные (разреженные) индексы для подмножества данных</p>
+
+      <p>Частичный индекс — это индекс, который включает только строки, удовлетворяющие определённому условию. Это позволяет значительно сократить размер индекса, если вас интересует только часть данных.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon pink">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="16" height="16" rx="2" stroke-dasharray="3 2"/><path d="M8 8h6M8 12h4"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Синтаксис и примеры</div>
+          </div>
+        </div>
+        <div class="code-block">
+          <span class="code-label">SQL</span>
+<span class="cm">-- Индекс только для активных пользователей</span>
+<span class="kw">CREATE INDEX</span> idx_users_active_email
+<span class="kw">ON</span> users (email)
+<span class="kw">WHERE</span> status = <span class="str">'active'</span>;
+
+<span class="cm">-- Индекс только для незавершённых заказов</span>
+<span class="kw">CREATE INDEX</span> idx_orders_pending
+<span class="kw">ON</span> orders (created_at)
+<span class="kw">WHERE</span> status <span class="kw">IN</span> (<span class="str">'pending'</span>, <span class="str">'processing'</span>);
+
+<span class="cm">-- Индекс для заказов с высокой суммой</span>
+<span class="kw">CREATE INDEX</span> idx_orders_premium
+<span class="kw">ON</span> orders (customer_id, total)
+<span class="kw">WHERE</span> total > <span class="num">10000</span>;
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon green">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 11l4 4L18 5"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Преимущества частичных индексов</div>
+          </div>
+        </div>
+        <ul class="highlight-list">
+          <li><strong>Меньший размер</strong> — индексируются только нужные строки</li>
+          <li><strong>Быстрее обновление</strong> — при изменении строки вне условия индекс не затрагивается</li>
+          <li><strong>Уникальность на подмножестве</strong> — можно обеспечить уникальность email только для активных пользователей</li>
+          <li><strong>Экономия места на диске</strong> — особенно при большом проценте «мусорных» данных</li>
+        </ul>
+      </div>
+
+      <div class="demo-container">
+        <div class="demo-title">Сравнение: полный индекс vs частичный</div>
+        <table class="demo-table">
+          <thead>
+            <tr><th>id</th><th>email</th><th>status</th><th>В полном индексе</th><th>В частичном</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>a@co.ru</td><td style="color:#10b981">active</td><td>✅</td><td>✅</td></tr>
+            <tr><td>2</td><td>b@co.ru</td><td style="color:#ef4444">inactive</td><td>✅</td><td>❌</td></tr>
+            <tr><td>3</td><td>c@co.ru</td><td style="color:#10b981">active</td><td>✅</td><td>✅</td></tr>
+            <tr><td>4</td><td>d@co.ru</td><td style="color:#f59e0b">banned</td><td>✅</td><td>❌</td></tr>
+            <tr><td>5</td><td>e@co.ru</td><td style="color:#10b981">active</td><td>✅</td><td>✅</td></tr>
+            <tr><td>6</td><td>f@co.ru</td><td style="color:#ef4444">inactive</td><td>✅</td><td>❌</td></tr>
+          </tbody>
+        </table>
+        <div class="demo-result">
+          <strong>Полный индекс:</strong> 6 записей<br>
+          <strong>Частичный (WHERE status = 'active'):</strong> 3 записей<br>
+          <span style="color:var(--success)">Экономия: 50% размера индекса</span>
+        </div>
+      </div>
+
+      <div class="info-box success">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--success)" stroke-width="1.5"><path d="M4 11l4 4L18 5"/></svg>
+        <div>
+          <p><strong>Идеальный кейс:</strong> таблица с 10 млн записей, из которых только 500 000 — активные. Частичный индекс по активным записям будет в 20 раз меньше полного!</p>
+        </div>
+      </div>
+
+      <div class="quiz-container" id="quiz-5">
+        <div class="quiz-header">
+          <span class="quiz-badge">Квиз</span>
+          <span class="quiz-title">Проверка понимания</span>
+        </div>
+        <div class="quiz-question">Таблица orders содержит 1 млн записей: 950 000 завершённых и 50 000 незавершённых. Какой индекс будет оптимальным для поиска незавершённых заказов?</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz('quiz-5', this, false)">
+            <span class="option-letter">A</span>
+            <span>CREATE INDEX idx_orders ON orders (created_at)</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-5', this, true)">
+            <span class="option-letter">B</span>
+            <span>CREATE INDEX idx_orders ON orders (created_at) WHERE status != 'completed'</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-5', this, false)">
+            <span class="option-letter">C</span>
+            <span>CREATE INDEX idx_orders ON orders (status, created_at)</span>
+          </div>
+        </div>
+        <div class="quiz-explanation" id="quiz-5-exp"></div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="goToSection(4)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>
+          Назад
+        </button>
+        <button class="btn btn-primary" onclick="goToSection(6)">
+          Далее: включённые столбцы
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SECTION 6: Included Columns -->
+    <div class="section" id="section-6">
+      <span class="section-badge badge-type">🔧 Тип 5</span>
+      <h2 class="section-title">Индекс с включёнными столбцами</h2>
+      <p class="section-subtitle">Покрывающие индексы для избегания обратных обращений к таблице</p>
+
+      <p>Обычно после поиска по индексу СУБД выполняет <strong>обратное обращение к таблице</strong> (Bookmark Lookup / Heap Fetch), чтобы получить значения столбцов, которых нет в индексе. Включённые столбцы позволяют этого избежать.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon cyan">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="16" height="16" rx="3"/><rect x="7" y="7" width="8" height="8" rx="1" stroke-dasharray="2 1"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Синтаксис INCLUDE</div>
+          </div>
+        </div>
+        <div class="code-block">
+          <span class="code-label">SQL Server / PostgreSQL 11+</span>
+<span class="cm">-- Без INCLUDE: поиск по email, но нужен ещё name и phone</span>
+<span class="cm">-- → поиск в индексе + обратное обращение к таблице</span>
+<span class="kw">CREATE INDEX</span> idx_users_email
+<span class="kw">ON</span> users (email);
+
+<span class="cm">-- С INCLUDE: все нужные данные уже в индексе</span>
+<span class="cm">-- → только поиск в индексе (covering index)</span>
+<span class="kw">CREATE INDEX</span> idx_users_email_covering
+<span class="kw">ON</span> users (email)
+<span class="kw">INCLUDE</span> (name, phone);
+
+<span class="cm">-- Запрос полностью покрывается индексом:</span>
+<span class="kw">SELECT</span> name, phone <span class="kw">FROM</span> users
+<span class="kw">WHERE</span> email = <span class="str">'ivan@example.com'</span>;
+        </div>
+      </div>
+
+      <div class="diagram-container">
+        <svg viewBox="0 0 680 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- WITHOUT INCLUDE -->
+          <rect x="10" y="10" width="320" height="260" rx="10" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5"/>
+          <text x="170" y="38" text-anchor="middle" font-family="Inter" font-weight="700" font-size="13" fill="#dc2626">Без INCLUDE</text>
+
+          <!-- Index structure -->
+          <rect x="30" y="55" width="120" height="50" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
+          <text x="90" y="75" text-anchor="middle" font-family="Inter" font-weight="600" font-size="11" fill="#1e40af">email</text>
+          <text x="90" y="93" text-anchor="middle" font-family="Inter" font-size="10" fill="#60a5fa">pointer→</text>
+
+          <rect x="30" y="115" width="120" height="50" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
+          <text x="90" y="135" text-anchor="middle" font-family="Inter" font-weight="600" font-size="11" fill="#1e40af">email</text>
+          <text x="90" y="153" text-anchor="middle" font-family="Inter" font-size="10" fill="#60a5fa">pointer→</text>
+
+          <rect x="30" y="175" width="120" height="50" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
+          <text x="90" y="195" text-anchor="middle" font-family="Inter" font-weight="600" font-size="11" fill="#1e40af">email</text>
+          <text x="90" y="213" text-anchor="middle" font-family="Inter" font-size="10" fill="#60a5fa">pointer→</text>
+
+          <!-- Table -->
+          <rect x="180" y="55" width="130" height="170" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+          <text x="245" y="75" text-anchor="middle" font-family="Inter" font-weight="600" font-size="10" fill="#475569">Таблица</text>
+          <text x="190" y="95" font-family="Inter" font-size="9" fill="#64748b">email|name|phone</text>
+          <text x="190" y="115" font-family="Inter" font-size="9" fill="#64748b">email|name|phone</text>
+          <text x="190" y="135" font-family="Inter" font-size="9" fill="#64748b">email|name|phone</text>
+          <text x="190" y="155" font-family="Inter" font-size="9" fill="#64748b">email|name|phone</text>
+          <text x="190" y="175" font-family="Inter" font-size="9" fill="#64748b">email|name|phone</text>
+          <text x="190" y="195" font-family="Inter" font-size="9" fill="#64748b">email|name|phone</text>
+          <text x="190" y="215" font-family="Inter" font-size="9" fill="#64748b">email|name|phone</text>
+
+          <!-- Arrows from index to table -->
+          <path d="M155 80 L178 105" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arrowRed)"/>
+          <path d="M155 140 L178 135" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arrowRed)"/>
+          <path d="M155 200 L178 165" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arrowRed)"/>
+
+          <!-- WITH INCLUDE -->
+          <rect x="350" y="10" width="320" height="260" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5"/>
+          <text x="510" y="38" text-anchor="middle" font-family="Inter" font-weight="700" font-size="13" fill="#059669">С INCLUDE</text>
+
+          <rect x="370" y="55" width="140" height="55" rx="6" fill="#d1fae5" stroke="#6ee7b7"/>
+          <text x="440" y="75" text-anchor="middle" font-family="Inter" font-weight="600" font-size="11" fill="#065f46">email (ключ)</text>
+          <text x="440" y="93" text-anchor="middle" font-family="Inter" font-size="10" fill="#10b981">name, phone</text>
+
+          <rect x="370" y="120" width="140" height="55" rx="6" fill="#d1fae5" stroke="#6ee7b7"/>
+          <text x="440" y="140" text-anchor="middle" font-family="Inter" font-weight="600" font-size="11" fill="#065f46">email (ключ)</text>
+          <text x="440" y="158" text-anchor="middle" font-family="Inter" font-size="10" fill="#10b981">name, phone</text>
+
+          <rect x="370" y="185" width="140" height="55" rx="6" fill="#d1fae5" stroke="#6ee7b7"/>
+          <text x="440" y="205" text-anchor="middle" font-family="Inter" font-weight="600" font-size="11" fill="#065f46">email (ключ)</text>
+          <text x="440" y="223" text-anchor="middle" font-family="Inter" font-size="10" fill="#10b981">name, phone</text>
+
+          <!-- No arrows to table needed -->
+          <text x="540" y="80" font-family="Inter" font-size="10" fill="#059669">✅ Нет</text>
+          <text x="540" y="95" font-family="Inter" font-size="10" fill="#059669">обращения</text>
+          <text x="540" y="110" font-family="Inter" font-size="10" fill="#059669">к таблице</text>
+
+          <defs>
+            <marker id="arrowRed" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="#ef4444"/></marker>
+          </defs>
+        </svg>
+        <p style="font-size:13px;color:var(--gray-500);margin-top:12px;margin-bottom:0;">Слева: каждое попадание в индекс требует отдельного обращения к таблице. Справа: все данные уже в индексе.</p>
+      </div>
+
+      <div class="info-box tip">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5"><circle cx="10" cy="10" r="8"/><path d="M10 10v4M10 7h.01"/></svg>
+        <div>
+          <p><strong>INCLUDE vs дополнительные столбцы в ключе:</strong> столбцы в INCLUDE не участвуют в поиске и сортировке, они просто «прилагаются» к каждой записи индекса. Это экономит место, так как они не дублируются на каждом уровне B-дерева.</p>
+        </div>
+      </div>
+
+      <div class="quiz-container" id="quiz-6">
+        <div class="quiz-header">
+          <span class="quiz-badge">Квиз</span>
+          <span class="quiz-title">Проверка понимания</span>
+        </div>
+        <div class="quiz-question">Зачем нужны включённые столбцы (INCLUDE), если можно добавить их в ключевые столбцы индекса?</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz('quiz-6', this, true)">
+            <span class="option-letter">A</span>
+            <span>Включённые столбцы не участвуют в сортировке B-дерева и не дублируются на каждом уровне, что экономит место и ускоряет поиск</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-6', this, false)">
+            <span class="option-letter">B</span>
+            <span>Это единственный способ хранить строковые данные в индексе</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-6', this, false)">
+            <span class="option-letter">C</span>
+            <span>Включённые столбцы обновляются реже, чем ключевые</span>
+          </div>
+        </div>
+        <div class="quiz-explanation" id="quiz-6-exp"></div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="goToSection(5)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>
+          Назад
+        </button>
+        <button class="btn btn-primary" onclick="goToSection(7)">
+          Далее: критерии создания
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SECTION 7: Decision Criteria -->
+    <div class="section" id="section-7">
+      <span class="section-badge badge-criteria">📊 Критерии</span>
+      <h2 class="section-title">Критерии создания индекса</h2>
+      <p class="section-subtitle">Когда создавать индекс, а когда — нет</p>
+
+      <p>Создание индекса — это всегда компромисс. Каждый индекс ускоряет чтение, но замедляет запись и занимает место на диске. Вот ключевые критерии для принятия решения:</p>
+
+      <div class="flow-item">
+        <div class="flow-number">1</div>
+        <div class="flow-content">
+          <h4>Размер таблицы</h4>
+          <p>Для таблиц до ~10 000 строк полное сканирование часто быстрее использования индекса из-за накладных расходов. Индексы имеют смысл на средних и больших таблицах.</p>
+        </div>
+      </div>
+
+      <div class="flow-item">
+        <div class="flow-number">2</div>
+        <div class="flow-content">
+          <h4>Селективность запроса</h4>
+          <p>Какую долю строк возвращает запрос? Если запрос выбирает более 5–10% строк таблицы, полное сканирование может быть быстрее. Индексы наиболее эффективны для выборки < 1% строк.</p>
+        </div>
+      </div>
+
+      <div class="flow-item">
+        <div class="flow-number">3</div>
+        <div class="flow-content">
+          <h4>Кардинальность столбца (разброс значений)</h4>
+          <p>Высокая кардинальность (много уникальных значений) — отлично для индекса (email, ID). Низкая кардинальность (мало уникальных значений) — индекс может быть бесполезен (пол, статус).</p>
+        </div>
+      </div>
+
+      <div class="flow-item">
+        <div class="flow-number">4</div>
+        <div class="flow-content">
+          <h4>Соотношение чтения и записи</h4>
+          <p>Частые SELECT — индекс полезен. Частые INSERT/UPDATE/DELETE — каждый индекс замедляет запись. Оцените соотношение операций в вашей нагрузке.</p>
+        </div>
+      </div>
+
+      <div class="flow-item">
+        <div class="flow-number">5</div>
+        <div class="flow-content">
+          <h4>Объём и стоимость хранения индекса</h4>
+          <p>Каждый индекс занимает место на диске и в оперативной памяти. Большой индекс может не поместиться в кэш, что снизит его эффективность. Оценивайте стоимость хранения.</p>
+        </div>
+      </div>
+
+      <div class="flow-item">
+        <div class="flow-number">6</div>
+        <div class="flow-content">
+          <h4>Частота использования в запросах</h4>
+          <p>Индекс должен использоваться часто. «Мёртвые» индексы, которые никогда не задействуются планировщиком, — пустая трата ресурсов. Мониторьте использование индексов.</p>
+        </div>
+      </div>
+
+      <div class="flow-item">
+        <div class="flow-number">7</div>
+        <div class="flow-content">
+          <h4>Наличие ограничений (UNIQUE, FOREIGN KEY)</h4>
+          <p>Ограничение UNIQUE автоматически создаёт индекс. FOREIGN KEY в некоторых СУБД не создаёт индекс автоматически — его стоит добавить для ускорения JOIN.</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <div class="card-header">
+          <div class="card-icon orange">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M11 7v4l2.5 2.5"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Сводная таблица критериев</div>
+          </div>
+        </div>
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Критерий</th>
+              <th>Создавать ✅</th>
+              <th>Не создавать ❌</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Размер таблицы</strong></td>
+              <td>Более 50 000 строк</td>
+              <td>Менее 5 000 строк</td>
+            </tr>
+            <tr>
+              <td><strong>Селективность</strong></td>
+              <td>Выборка &lt; 5% строк</td>
+              <td>Выборка &gt; 10–15% строк</td>
+            </tr>
+            <tr>
+              <td><strong>Кардинальность</strong></td>
+              <td>Высокая (email, ID)</td>
+              <td>Низкая (пол, true/false)</td>
+            </tr>
+            <tr>
+              <td><strong>Чтение / Запись</strong></td>
+              <td>Много SELECT</td>
+              <td>Много INSERT/UPDATE</td>
+            </tr>
+            <tr>
+              <td><strong>Частота запросов</strong></td>
+              <td>Запрос выполняется часто</td>
+              <td>Запрос редкий / одноразовый</td>
+            </tr>
+            <tr>
+              <td><strong>Размер индекса</strong></td>
+              <td>Умещается в RAM</td>
+              <td>Превышает доступную память</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="goToSection(6)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>
+          Назад
+        </button>
+        <button class="btn btn-primary" onclick="goToSection(8)">
+          Далее: селективность
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SECTION 8: Selectivity Deep Dive -->
+    <div class="section" id="section-8">
+      <span class="section-badge badge-criteria">📊 Критерии</span>
+      <h2 class="section-title">Глубже: селективность и кардинальность</h2>
+      <p class="section-subtitle">Два ключевых понятия для принятия решений об индексах</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon blue">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="16" height="16" rx="3"/><path d="M7 11l3 3 5-6"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Селективность (Selectivity)</div>
+          </div>
+        </div>
+        <p style="font-size:14px;color:var(--gray-600);margin:0 0 12px;">Селективность — это доля уникальных значений в столбце относительно общего числа строк:</p>
+        <div class="code-block">
+<span class="cm">Селективность = COUNT(DISTINCT column) / COUNT(*)</span>
+
+<span class="cm">Пример: таблица users с 1 000 000 строк</span>
+<span class="cm">— email: 1 000 000 уникальных → селективность = 1.0 (идеально)</span>
+<span class="cm">— department: 5 уникальных → селективность = 0.000005 (плохо)</span>
+<span class="cm">— gender: 2 уникальных → селективность = 0.000002 (очень плохо)</span>
+        </div>
+        <p style="font-size:14px;color:var(--gray-600);margin:8px 0 0;"><strong>Правило:</strong> чем ближе селективность к 1.0, тем полезнее индекс по этому столбцу.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon green">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 19V3M3 19h16"/><path d="M7 15l4-6 4 4 4-8"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Селективность запроса</div>
+          </div>
+        </div>
+        <p style="font-size:14px;color:var(--gray-600);margin:0 0 12px;">Также важна селективность самого запроса — сколько строк он возвращает:</p>
+        <div class="code-block">
+<span class="cm">Таблица orders: 1 000 000 строк</span>
+
+<span class="cm">-- Высокая селективность запроса (хорошо для индекса)</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> orders
+<span class="kw">WHERE</span> id = <span class="num">42</span>;
+<span class="cm">-- Возвращает 1 строку из 1 000 000 → 0.0001%</span>
+
+<span class="cm">-- Низкая селективность запроса (плохо для индекса)</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> orders
+<span class="kw">WHERE</span> status = <span class="str">'completed'</span>;
+<span class="cm">-- Возвращает 900 000 строк → 90%</span>
+<span class="cm">-- Полное сканирование будет быстрее!</span>
+        </div>
+      </div>
+
+      <div class="demo-container">
+        <div class="demo-title">Интерактивный калькулятор селективности</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+          <div>
+            <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Всего строк в таблице</label>
+            <input type="number" id="calcTotal" value="1000000" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#e2e8f0;font-family:inherit;font-size:14px;" oninput="calcSelectivity()">
+          </div>
+          <div>
+            <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Уникальных значений</label>
+            <input type="number" id="calcUnique" value="500000" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#e2e8f0;font-family:inherit;font-size:14px;" oninput="calcSelectivity()">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+          <div>
+            <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Строк возвращает запрос</label>
+            <input type="number" id="calcReturned" value="100" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#e2e8f0;font-family:inherit;font-size:14px;" oninput="calcSelectivity()">
+          </div>
+        </div>
+        <div class="demo-result" id="calcResult">
+          <strong>Селективность столбца:</strong> 50.00%<br>
+          <strong>Селективность запроса:</strong> 0.01%<br>
+          <strong>Рекомендация:</strong> ✅ Индекс полезен — высокая селективность столбца и малая выборка
+        </div>
+      </div>
+
+      <div class="info-box warning">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--warning)" stroke-width="1.5"><path d="M10 2L18 17H2z"/><path d="M10 8v4M10 15h.01"/></svg>
+        <div>
+          <p><strong>Нюанс:</strong> даже столбец с низкой кардинальностью (например, status) может быть полезен в композитном индексе, если он стоит первым и значительно сокращает область поиска для последующих столбцов.</p>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="goToSection(7)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>
+          Назад
+        </button>
+        <button class="btn btn-primary" onclick="goToSection(9)">
+          Далее: стоимость индексов
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SECTION 9: Cost of Indexes -->
+    <div class="section" id="section-9">
+      <span class="section-badge badge-criteria">📊 Критерии</span>
+      <h2 class="section-title">Стоимость индексов</h2>
+      <p class="section-subtitle">Обратная сторона медали: что вы платите за ускорение чтения</p>
+
+      <p>Каждый индекс — это не бесплатное ускорение. Вот все виды «платы», которые вы вносите за каждый дополнительный индекс:</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon pink">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M11 7v4l2.5 2.5"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Стоимость записи</div>
+          </div>
+        </div>
+        <p style="font-size:14px;color:var(--gray-600);margin:0 0 12px;">При каждой операции INSERT, UPDATE, DELETE все индексы таблицы должны быть обновлены:</p>
+        <div class="code-block">
+<span class="cm">Таблица с 5 индексами:</span>
+<span class="cm">INSERT → 1 запись в таблицу + 5 записей в индексы = 6 операций</span>
+<span class="cm">UPDATE → 1 обновление таблицы + до 5 обновлений индексов</span>
+<span class="cm">DELETE → 1 удаление из таблицы + 5 удалений из индексов</span>
+
+<span class="cm">⚡ Вывод: 5 индексов = запись в ~5 раз медленнее!</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon orange">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 18h14M6 18V8l5-4 5 4v10"/><path d="M9 18v-4h4v4"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Стоимость хранения</div>
+          </div>
+        </div>
+        <p style="font-size:14px;color:var(--gray-600);margin:0 0 12px;">Индексы занимают место на диске и в оперативной памяти:</p>
+        <ul class="highlight-list">
+          <li><strong>На диске:</strong> индекс обычно составляет 10–30% от размера таблицы (зависит от типа)</li>
+          <li><strong>В памяти:</strong> индексы конкурируют за буферный кэш СУБД</li>
+          <li><strong>Резервные копии:</strong> увеличивают время и объём бэкапов</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon purple">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 11l4 4L18 5"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Стоимость обслуживания</div>
+          </div>
+        </div>
+        <ul class="highlight-list">
+          <li><strong>Дефрагментация:</strong> со временем индексы фрагментируются и требуют перестройки (REINDEX / ALTER INDEX REBUILD)</li>
+          <li><strong>Статистика:</strong> СУБД должна поддерживать актуальную статистику по индексам (ANALYZE)</li>
+          <li><strong>Планировщик:</strong> чем больше индексов, тем больше вариантов планирует оптимизатор запросов</li>
+        </ul>
+      </div>
+
+      <div class="info-box danger">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--error)" stroke-width="1.5"><circle cx="10" cy="10" r="8"/><path d="M7 7l6 6M13 7l-6 6"/></svg>
+        <div>
+          <p><strong>Золотое правило:</strong> не создавайте индекс «на всякий случай». Каждый индекс должен быть обоснован конкретным запросом или ограничением. «Мёртвые» индексы — самая распространённая ошибка.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon cyan">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16h16M5 16V10l6-6 6 6v6"/><rect x="8" y="12" width="6" height="4"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Как найти неиспользуемые индексы</div>
+          </div>
+        </div>
+        <div class="code-block">
+          <span class="code-label">PostgreSQL</span>
+<span class="cm">-- Показывает индексы, которые никогда не использовались</span>
+<span class="kw">SELECT</span>
+    schemaname, relname, indexrelname,
+    idx_scan <span class="kw">AS</span> reads,
+    pg_size_pretty(pg_relation_size(indexrelid)) <span class="kw">AS</span> size
+<span class="kw">FROM</span> pg_stat_user_indexes
+<span class="kw">WHERE</span> idx_scan = <span class="num">0</span>
+<span class="kw">ORDER BY</span> pg_relation_size(indexrelid) <span class="kw">DESC</span>;
+        </div>
+      </div>
+
+      <div class="quiz-container" id="quiz-9">
+        <div class="quiz-header">
+          <span class="quiz-badge">Квиз</span>
+          <span class="quiz-title">Проверка понимания</span>
+        </div>
+        <div class="quiz-question">Таблица users (500 000 строк) получает 10 000 INSERT и 500 SELECT в день. Стоит ли добавлять новый индекс для редкого отчёта?</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz('quiz-9', this, true)">
+            <span class="option-letter">A</span>
+            <span>Скорее нет — 20 операций записи на 1 чтение, индекс будет сильно замедлять запись ради редкого запроса</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-9', this, false)">
+            <span class="option-letter">B</span>
+            <span>Да, любой индекс полезен, так как ускоряет чтение</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-9', this, false)">
+            <span class="option-letter">C</span>
+            <span>Да, потому что таблица большая (500 000 строк)</span>
+          </div>
+        </div>
+        <div class="quiz-explanation" id="quiz-9-exp"></div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="goToSection(8)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>
+          Назад
+        </button>
+        <button class="btn btn-primary" onclick="goToSection(10)">
+          Итоговый квиз
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SECTION 10: Final Quiz -->
+    <div class="section" id="section-10">
+      <span class="section-badge badge-quiz">🎯 Квиз</span>
+      <h2 class="section-title">Итоговый квиз</h2>
+      <p class="section-subtitle">Проверьте свои знания по всем темам туториала</p>
+
+      <div class="quiz-container" id="quiz-final-1">
+        <div class="quiz-header">
+          <span class="quiz-badge">Вопрос 1/6</span>
+          <span class="quiz-title">Типы индексов</span>
+        </div>
+        <div class="quiz-question">Какой тип индекса лучше всего подходит для запроса <code>SELECT * FROM orders WHERE status = 'active' AND created_at > '2024-01-01'</code>, если только 5% заказов активны?</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-1', this, false)">
+            <span class="option-letter">A</span>
+            <span>Индекс по одному столбцу (status)</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-1', this, false)">
+            <span class="option-letter">B</span>
+            <span>Индекс по одному столбцу (created_at)</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-1', this, true)">
+            <span class="option-letter">C</span>
+            <span>Частичный индекс: ON orders (created_at) WHERE status = 'active'</span>
+          </div>
+        </div>
+        <div class="quiz-explanation" id="quiz-final-1-exp"></div>
+      </div>
+
+      <div class="quiz-container" id="quiz-final-2">
+        <div class="quiz-header">
+          <span class="quiz-badge">Вопрос 2/6</span>
+          <span class="quiz-title">Правило левого префикса</span>
+        </div>
+        <div class="quiz-question">У вас есть композитный индекс (last_name, first_name, birth_date). Для какого запроса индекс будет использован наиболее эффективно?</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-2', this, true)">
+            <span class="option-letter">A</span>
+            <span>WHERE last_name = 'Иванов' AND first_name = 'Пётр'</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-2', this, false)">
+            <span class="option-letter">B</span>
+            <span>WHERE first_name = 'Пётр' AND birth_date = '1990-01-01'</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-2', this, false)">
+            <span class="option-letter">C</span>
+            <span>WHERE birth_date > '1990-01-01'</span>
+          </div>
+        </div>
+        <div class="quiz-explanation" id="quiz-final-2-exp"></div>
+      </div>
+
+      <div class="quiz-container" id="quiz-final-3">
+        <div class="quiz-header">
+          <span class="quiz-badge">Вопрос 3/6</span>
+          <span class="quiz-title">INCLUDE и покрывающие индексы</span>
+        </div>
+        <div class="quiz-question">Что такое «покрывающий индекс» (covering index)?</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-3', this, false)">
+            <span class="option-letter">A</span>
+            <span>Индекс, который покрывает всю таблицу целиком</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-3', this, true)">
+            <span class="option-letter">B</span>
+            <span>Индекс, который содержит все столбцы, необходимые для выполнения запроса, исключая обращение к таблице</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-3', this, false)">
+            <span class="option-letter">C</span>
+            <span>Индекс, который автоматически создаётся для всех столбцов таблицы</span>
+          </div>
+        </div>
+        <div class="quiz-explanation" id="quiz-final-3-exp"></div>
+      </div>
+
+      <div class="quiz-container" id="quiz-final-4">
+        <div class="quiz-header">
+          <span class="quiz-badge">Вопрос 4/6</span>
+          <span class="quiz-title">Селективность</span>
+        </div>
+        <div class="quiz-question">Столбец gender содержит значения 'M' и 'F'. Селективность = 2/1000000 = 0.000002. Почему индекс по этому столбцу обычно неэффективен?</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-4', this, true)">
+            <span class="option-letter">A</span>
+            <span>Каждое значение соответствует ~500 000 строк, поэтому СУБД предпочтёт полное сканирование</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-4', this, false)">
+            <span class="option-letter">B</span>
+            <span>СУБД не поддерживает индексы по столбцам с малым числом уникальных значений</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-4', this, false)">
+            <span class="option-letter">C</span>
+            <span>Индекс по такому столбцу будет слишком большим</span>
+          </div>
+        </div>
+        <div class="quiz-explanation" id="quiz-final-4-exp"></div>
+      </div>
+
+      <div class="quiz-container" id="quiz-final-5">
+        <div class="quiz-header">
+          <span class="quiz-badge">Вопрос 5/6</span>
+          <span class="quiz-title">Вычисляемые индексы</span>
+        </div>
+        <div class="quiz-question">Вы создали индекс <code>ON users (LOWER(email))</code>. Какой запрос НЕ будет использовать этот индекс?</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-5', this, false)">
+            <span class="option-letter">A</span>
+            <span>WHERE LOWER(email) = 'test@mail.ru'</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-5', this, true)">
+            <span class="option-letter">B</span>
+            <span>WHERE email = 'test@mail.ru'</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-5', this, false)">
+            <span class="option-letter">C</span>
+            <span>WHERE LOWER(email) LIKE 'test%'</span>
+          </div>
+        </div>
+        <div class="quiz-explanation" id="quiz-final-5-exp"></div>
+      </div>
+
+      <div class="quiz-container" id="quiz-final-6">
+        <div class="quiz-header">
+          <span class="quiz-badge">Вопрос 6/6</span>
+          <span class="quiz-title">Стоимость индексов</span>
+        </div>
+        <div class="quiz-question">Что произойдёт с производительностью INSERT при добавлении 3 новых индексов на таблицу?</div>
+        <div class="quiz-options">
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-6', this, true)">
+            <span class="option-letter">A</span>
+            <span>INSERT замедлится, так как СУБД должна обновить каждый из 3 индексов при каждой вставке</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-6', this, false)">
+            <span class="option-letter">B</span>
+            <span>INSERT ускорится, так как индексы оптимизируют все операции</span>
+          </div>
+          <div class="quiz-option" onclick="checkQuiz('quiz-final-6', this, false)">
+            <span class="option-letter">C</span>
+            <span>Ничего не изменится — индексы влияют только на SELECT</span>
+          </div>
+        </div>
+        <div class="quiz-explanation" id="quiz-final-6-exp"></div>
+      </div>
+
+      <div class="score-display" id="scoreDisplay" style="display:none;">
+        <div class="score-number" id="scoreNumber">0/6</div>
+        <div class="score-label">Правильных ответов</div>
+        <p style="margin-top:12px;font-size:14px;color:var(--gray-600);" id="scoreMessage"></p>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="goToSection(9)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>
+          Назад
+        </button>
+        <button class="btn btn-primary" onclick="goToSection(11)">
+          Заключение
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SECTION 11: Summary -->
+    <div class="section" id="section-11">
+      <span class="section-badge badge-summary">🎓 Итоги</span>
+      <h2 class="section-title">Заключение</h2>
+      <p class="section-subtitle">Ключевые выводы и рекомендации</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon green">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 11l4 4L18 5"/></svg>
+          </div>
+          <div>
+            <div class="card-title">5 типов индексов — краткий обзор</div>
+          </div>
+        </div>
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Тип</th>
+              <th>Когда использовать</th>
+              <th>Пример</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>По одному столбцу</strong></td>
+              <td>Частые поиски по одному полю</td>
+              <td><code>ON users (email)</code></td>
+            </tr>
+            <tr>
+              <td><strong>По нескольким столбцам</strong></td>
+              <td>Запросы с несколькими условиями</td>
+              <td><code>ON orders (status, date)</code></td>
+            </tr>
+            <tr>
+              <td><strong>Вычисляемый</strong></td>
+              <td>Поиск по функции/выражению</td>
+              <td><code>ON users (LOWER(email))</code></td>
+            </tr>
+            <tr>
+              <td><strong>С условием</strong></td>
+              <td>Интересует только часть данных</td>
+              <td><code>ON orders (date) WHERE status='pending'</code></td>
+            </tr>
+            <tr>
+              <td><strong>С INCLUDE</strong></td>
+              <td>Нужны дополнительные столбцы без обращения к таблице</td>
+              <td><code>ON users (email) INCLUDE (name, phone)</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon blue">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M10 10v4M10 7h.01"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Чек-лист: стоит ли создавать индекс?</div>
+          </div>
+        </div>
+        <ul class="checklist">
+          <li>
+            <span class="check-icon">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l3 3 5-5"/></svg>
+            </span>
+            <span>Таблица содержит достаточно строк (обычно &gt; 50 000)</span>
+          </li>
+          <li>
+            <span class="check-icon">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l3 3 5-5"/></svg>
+            </span>
+            <span>Запрос выбирает малую долю строк (&lt; 5–10%)</span>
+          </li>
+          <li>
+            <span class="check-icon">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l3 3 5-5"/></svg>
+            </span>
+            <span>Столбец имеет высокую кардинальность (много уникальных значений)</span>
+          </li>
+          <li>
+            <span class="check-icon">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l3 3 5-5"/></svg>
+            </span>
+            <span>Запрос выполняется часто, а запись — относительно редко</span>
+          </li>
+          <li>
+            <span class="check-icon">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l3 3 5-5"/></svg>
+            </span>
+            <span>Индекс поместится в оперативную память (буферный кэш)</span>
+          </li>
+          <li>
+            <span class="check-icon">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l3 3 5-5"/></svg>
+            </span>
+            <span>Нет дублирующего индекса с тем же или более широким охватом</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon orange">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2L18 17H2z"/><path d="M10 8v4M10 15h.01"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Лучшие практики</div>
+          </div>
+        </div>
+        <ul class="highlight-list">
+          <li><strong>Мониторьте</strong> использование индексов и удаляйте неиспользуемые</li>
+          <li><strong>Начинайте с EXPLAIN</strong> — анализируйте план выполнения запроса перед созданием индекса</li>
+          <li><strong>Порядок столбцов важен</strong> — ставьте более селективные столбцы первыми в композитном индексе</li>
+          <li><strong>Частичные индексы</strong> — мощный инструмент для экономии места при работе с подмножествами данных</li>
+          <li><strong>INCLUDE</strong> — используйте для избежания обратных обращений к таблице в частых запросах</li>
+          <li><strong>Не переиндексируйте</strong> — каждый лишний индекс замедляет запись</li>
+        </ul>
+      </div>
+
+      <div class="info-box success">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--success)" stroke-width="1.5"><path d="M4 11l4 4L18 5"/></svg>
+        <div>
+          <p><strong>Поздравляем!</strong> Вы молодец！Теперь вы понимаете основные типы индексов, их особенности и критерии для принятия решений. Используйте эти знания для оптимизации ваших баз данных.</p>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="goToSection(10)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>
+          К квизу
+        </button>
+        <button class="btn btn-primary" onclick="goToSection(0)">
+          В начало
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8l5-5 5 5"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // State
+  let currentSection = 0;
+  const totalSections = 12;
+  const completedSections = new Set();
+  const quizAnswers = {};
+  let finalQuizScore = 0;
+  const finalQuizTotal = 6;
+
+  // Navigation
+  function goToSection(index) {
+    if (index < 0 || index >= totalSections) return;
+
+    // Mark current as completed
+    completedSections.add(currentSection);
+
+    currentSection = index;
+
+    // Update sections
+    document.querySelectorAll('.section').forEach((s, i) => {
+      s.classList.toggle('active', i === index);
+    });
+
+    // Update sidebar
+    document.querySelectorAll('.nav-item').forEach((item, i) => {
+      item.classList.toggle('active', parseInt(item.dataset.section) === index);
+      item.classList.toggle('completed', completedSections.has(parseInt(item.dataset.section)) && parseInt(item.dataset.section) !== index);
+    });
+
+    // Update progress
+    updateProgress();
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Close mobile sidebar
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+
+    // Mark as completed when navigating away
+    if (index === totalSections - 1) {
+      completedSections.add(index);
+      updateProgress();
+    }
+  }
+
+  function updateProgress() {
+    const pct = (completedSections.size / totalSections) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = completedSections.size + ' / ' + totalSections;
+  }
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('open');
+  }
+
+  // Quiz system
+  function checkQuiz(quizId, optionEl, isCorrect) {
+    if (quizAnswers[quizId]) return; // Already answered
+    quizAnswers[quizId] = isCorrect;
+
+    const container = document.getElementById(quizId);
+    const options = container.querySelectorAll('.quiz-option');
+    const explanation = document.getElementById(quizId + '-exp');
+
+    // Disable all options
+    options.forEach(opt => opt.classList.add('disabled'));
+
+    // Find correct option and mark it
+    options.forEach(opt => {
+      const handler = opt.getAttribute('onclick');
+      if (handler && handler.includes('true')) {
+        opt.classList.add('correct');
+      }
+    });
+
+    if (!isCorrect) {
+      optionEl.classList.add('incorrect');
+    }
+
+    // Build explanation
+    const explanations = {
+      'quiz-2': {
+        correct: 'Верно! Без индекса СУБД выполняет Sequential Scan — последовательное чтение каждой строки таблицы. Это O(n) операция.',
+        incorrect: 'Неверно. Без индекса СУБД выполнит полное сканирование таблицы (Sequential Scan), проверяя каждую строку. Ошибки не будет — запрос просто будет медленным.'
+      },
+      'quiz-3': {
+        correct: 'Верно! Запрос начинается с salary, пропуская department — это нарушает правило левого префикса. Индекс не сможет эффективно использоваться.',
+        incorrect: 'Неверно. Правильный ответ B — запрос начинается со второго столбца индекса (salary), нарушая правило левого префикса.'
+      },
+      'quiz-4': {
+        correct: 'Верно! Выражение в запросе должно точно совпадать с выражением в индексе. Только вариант A использует EXTRACT(year FROM order_date).',
+        incorrect: 'Неверно. Индекс по выражению работает только при точном совпадении выражения в запросе. Вариант A — единственный правильный.'
+      },
+      'quiz-5': {
+        correct: 'Верно! Частичный индекс по незавершённым заказам будет содержать только 50 000 строк вместо 1 000 000, что сэкономит 95% места.',
+        incorrect: 'Неверно. Правильный ответ B — частичный индекс WHERE status != \'completed\' создаст индекс только для 50 000 строк, экономя 95% места.'
+      },
+      'quiz-6': {
+        correct: 'Верно! INCLUDE-столбцы хранятся только в листовых узлах B-дерева и не участвуют в сортировке, что экономит место на верхних уровнях.',
+        incorrect: 'Неверно. Включённые столбцы экономят место, так как не дублируются на каждом уровне B-дерева и не участвуют в сортировке.'
+      },
+      'quiz-9': {
+        correct: 'Верно! При соотношении 20:1 (запись:чтение) индекс сильно замедлит запись ради редкого запроса. Лучше обойтись без индекса или использовать временное решение.',
+        incorrect: 'Неверно. При 10 000 INSERT и 500 SELECT в день соотношение 20:1 не в пользу индекса. Он замедлит запись ради редкого чтения.'
+      },
+      'quiz-final-1': {
+        correct: 'Верно! Частичный индекс идеально подходит: он индексирует только активные заказы (5%), что экономит место и ускоряет поиск по created_at.',
+        incorrect: 'Неверно. Частичный индекс (вариант C) — оптимальный выбор, так как он индексирует только 5% строк и идеально подходит для этого запроса.'
+      },
+      'quiz-final-2': {
+        correct: 'Верно! Запрос использует первые два столбца индекса (last_name, first_name) — это полное использование левого префикса.',
+        incorrect: 'Неверно. Вариант A — правильный, так как использует первые столбцы индекса (last_name, first_name), соблюдая правило левого префикса.'
+      },
+      'quiz-final-3': {
+        correct: 'Верно! Покрывающий индекс содержит все данные для запроса, позволяя СУБД ответить на запрос без обращения к таблице.',
+        incorrect: 'Неверно. Покрывающий индекс (вариант B) содержит все нужные столбцы и позволяет избежать обратного обращения к таблице.'
+      },
+      'quiz-final-4': {
+        correct: 'Верно! При 500 000 строк на каждое значение СУБД решит, что полное сканирование быстрее, чем поиск в индексе с последующим извлечением 500 000 строк.',
+        incorrect: 'Неверно. СУБД поддерживает такие индексы, но при 500 000 строк на значение она предпочтёт полное сканирование (вариант A).'
+      },
+      'quiz-final-5': {
+        correct: 'Верно! Индекс по LOWER(email) не поможет для запроса без LOWER(). СУБД не сможет использовать индекс, так как выражения не совпадают.',
+        incorrect: 'Неверно. Вариант B — правильный: запрос WHERE email = \'test@mail.ru\' не использует функцию LOWER(), поэтому индекс неприменим.'
+      },
+      'quiz-final-6': {
+        correct: 'Верно! Каждый INSERT требует обновления всех индексов. 3 дополнительных индекса = 3 дополнительные операции записи на каждую вставку.',
+        incorrect: 'Неверно. Индексы замедляют запись (вариант A), так как при каждом INSERT нужно обновить каждый индекс таблицы.'
+      }
+    };
+
+    const exp = explanations[quizId];
+    if (exp) {
+      explanation.innerHTML = isCorrect
+        ? '<strong style="color:var(--success)">✅ Правильно!</strong>' + exp.correct
+        : '<strong style="color:var(--error)">❌ Неправильно.</strong>' + exp.incorrect;
+      explanation.className = 'quiz-explanation show ' + (isCorrect ? 'correct-exp' : 'incorrect-exp');
+    }
+
+    // Update final quiz score
+    if (quizId.startsWith('quiz-final-')) {
+      finalQuizScore = Object.entries(quizAnswers)
+        .filter(([k, v]) => k.startsWith('quiz-final-') && v)
+        .length;
+
+      const answeredCount = Object.keys(quizAnswers).filter(k => k.startsWith('quiz-final-')).length;
+      if (answeredCount === finalQuizTotal) {
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        scoreDisplay.style.display = 'block';
+        document.getElementById('scoreNumber').textContent = finalQuizScore + '/' + finalQuizTotal;
+
+        let msg = '';
+        if (finalQuizScore === finalQuizTotal) msg = '🏆 Отлично! Вы отлично усвоили материал!';
+        else if (finalQuizScore >= 4) msg = '👍 Хороший результат! Повторите слабые места.';
+        else if (finalQuizScore >= 2) msg = '📚 Стоит повторить материал. Перечитайте разделы и попробуйте снова.';
+        else msg = '📖 Рекомендуем пройти туториал заново для лучшего усвоения.';
+        document.getElementById('scoreMessage').textContent = msg;
+      }
+    }
+  }
+
+  // Demo functions
+  function runDemo1(mode) {
+    const btns = document.querySelectorAll('#section-2 .demo-btn');
+    btns.forEach(b => b.classList.remove('active-btn'));
+    event.target.classList.add('active-btn');
+
+    const result = document.getElementById('demoResult1');
+    const table = document.getElementById('demoTable1');
+    const rows = table.querySelectorAll('tbody tr');
+
+    rows.forEach(r => r.classList.remove('highlight-row'));
+
+    if (mode === 'noindex') {
+      // Simulate full scan
+      let scanned = 0;
+      const target = rows[2]; // charlie@co.ru
+      result.innerHTML = '🔍 Полный сканирование таблицы...<br>';
+
+      const interval = setInterval(() => {
+        if (scanned < rows.length) {
+          rows[scanned].classList.add('highlight-row');
+          result.innerHTML += `→ Проверка строки ${scanned + 1}: ${rows[scanned].children[1].textContent}... `;
+          if (scanned === 2) {
+            result.innerHTML += '<span class="found">✅ Найдено!</span><br>';
+          } else {
+            result.innerHTML += '❌ не совпадает<br>';
+          }
+          scanned++;
+        } else {
+          clearInterval(interval);
+          result.innerHTML += `<br><span class="scan-count">Просканировано строк: ${rows.length} из ${rows.length}</span>`;
+          rows.forEach(r => r.classList.remove('highlight-row'));
+          rows[2].classList.add('highlight-row');
+        }
+      }, 400);
+    } else {
+      // With index - direct lookup
+      rows[2].classList.add('highlight-row');
+      result.innerHTML = '🎯 Поиск по индексу (B-дерево):<br>';
+      result.innerHTML += '→ Шаг 1: корень дерева → левая ветвь<br>';
+      result.innerHTML += '→ Шаг 2: промежуточный узел → нужный лист<br>';
+      result.innerHTML += '→ Шаг 3: найдено значение в листовом узле<br>';
+      result.innerHTML += `<br><span class="found">✅ Найдено за 3 шага!</span> (вместо ${rows.length} проверок)<br>`;
+      result.innerHTML += `<span class="scan-count">Скорость: O(log n) вместо O(n)</span>`;
+    }
+  }
+
+  function runDemo2(queryType) {
+    const btns = document.querySelectorAll('#section-3 .demo-btn');
+    btns.forEach(b => b.classList.remove('active-btn'));
+    event.target.classList.add('active-btn');
+
+    const result = document.getElementById('demoResult2');
+
+    if (queryType === 'dept') {
+      result.innerHTML = '<strong>WHERE department = \'HR\'</strong><br><br>';
+      result.innerHTML += '📖 Индекс <strong>может быть использован</strong> — department — первый столбец в индексе.<br>';
+      result.innerHTML += '→ Переход к разделу "HR" в B-дереве<br>';
+      result.innerHTML += '→ Последовательное чтение всех записей HR<br>';
+      result.innerHTML += '<span class="found">✅ Индекс эффективен</span>';
+    } else if (queryType === 'dept_salary') {
+      result.innerHTML = '<strong>WHERE department = \'IT\' AND salary > 120000</strong><br><br>';
+      result.innerHTML += '📖 Индекс <strong>полностью используется</strong> — оба столбца в правильном порядке.<br>';
+      result.innerHTML += '→ Переход к разделу "IT"<br>';
+      result.innerHTML += '→ Бинарный поиск по salary > 120000 внутри IT<br>';
+      result.innerHTML += '<span class="found">✅ Отличная эффективность</span>';
+    } else {
+      result.innerHTML = '<strong>WHERE salary > 120000</strong><br><br>';
+      result.innerHTML += '📖 Индекс <strong>НЕ может быть эффективно использован</strong>.<br>';
+      result.innerHTML += '→ salary — второй столбец, нет левого префикса (department)<br>';
+      result.innerHTML += '→ СУБД выполнит <span class="scan-count">полное сканирование таблицы</span><br>';
+      result.innerHTML += '<span style="color:var(--warning)">⚠️ Индекс бесполезен для этого запроса</span>';
+    }
+  }
+
+  function calcSelectivity() {
+    const total = parseInt(document.getElementById('calcTotal').value) || 1;
+    const unique = parseInt(document.getElementById('calcUnique').value) || 0;
+    const returned = parseInt(document.getElementById('calcReturned').value) || 0;
+
+    const colSelectivity = (unique / total * 100).toFixed(2);
+    const querySelectivity = (returned / total * 100).toFixed(2);
+
+    let recommendation = '';
+    if (colSelectivity > 50 && querySelectivity < 5) {
+      recommendation = '✅ Индекс очень полезен — высокая селективность столбца и малая выборка';
+    } else if (colSelectivity > 20 && querySelectivity < 10) {
+      recommendation = '👍 Индекс, вероятно, будет полезен';
+    } else if (colSelectivity < 5) {
+      recommendation = '⚠️ Низкая кардинальность столбца — индекс может быть неэффективен';
+    } else if (querySelectivity > 20) {
+      recommendation = '⚠️ Запрос возвращает слишком много строк — полное сканирование может быть быстрее';
+    } else {
+      recommendation = '🤔 Индекс может быть полезен, но требует анализа плана выполнения';
+    }
+
+    document.getElementById('calcResult').innerHTML =
+      `<strong>Селективность столбца:</strong> ${colSelectivity}%<br>` +
+      `<strong>Селективность запроса:</strong> ${querySelectivity}%<br>` +
+      `<strong>Рекомендация:</strong> ${recommendation}`;
+  }
+
+  // Initialize
+  updateProgress();
+  calcSelectivity();
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      goToSection(currentSection + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      goToSection(currentSection - 1);
+    }
+  });
+</script>
+</body>
+</html>
+
