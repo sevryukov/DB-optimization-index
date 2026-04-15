@@ -1204,41 +1204,38 @@
           <text x="530" y="40" text-anchor="middle" font-family="Inter" font-weight="700" font-size="14" fill="#059669">Поиск по индексу</text>
           <text x="530" y="60" text-anchor="middle" font-family="Inter" font-size="11" fill="#065f46">O(log n) — быстро</text>
 
-          <!-- B-Tree -->
-          <rect x="510" y="80" width="40" height="28" rx="6" fill="#059669" stroke="#047857" stroke-width="1.5"/>
-          <text x="530" y="98" text-anchor="middle" font-family="Inter" font-weight="600" font-size="12" fill="white">38</text>
+          <!-- B-tree node layout -->
+          <rect x="510" y="90" width="80" height="32" rx="10" fill="#059669" stroke="#047857" stroke-width="1.5"/>
+          <text x="550" y="111" text-anchor="middle" font-family="Inter" font-weight="600" font-size="14" fill="white">32</text>
 
-          <rect x="430" y="130" width="40" height="28" rx="6" fill="#10b981" stroke="#059669" stroke-width="1.5"/>
-          <text x="450" y="148" text-anchor="middle" font-family="Inter" font-weight="600" font-size="12" fill="white">28</text>
+          <rect x="360" y="150" width="100" height="32" rx="10" fill="#10b981" stroke="#059669" stroke-width="1.5"/>
+          <text x="390" y="171" text-anchor="middle" font-family="Inter" font-weight="600" font-size="14" fill="white">25</text>
+          <text x="430" y="171" text-anchor="middle" font-family="Inter" font-weight="600" font-size="14" fill="white">28</text>
 
-          <rect x="590" y="130" width="40" height="28" rx="6" fill="#10b981" stroke="#059669" stroke-width="1.5"/>
-          <text x="610" y="148" text-anchor="middle" font-family="Inter" font-weight="600" font-size="12" fill="white">45</text>
+          <rect x="520" y="150" width="140" height="32" rx="10" fill="#10b981" stroke="#059669" stroke-width="1.5"/>
+          <text x="550" y="171" text-anchor="middle" font-family="Inter" font-weight="600" font-size="14" fill="white">38</text>
+          <text x="600" y="171" text-anchor="middle" font-family="Inter" font-weight="600" font-size="14" fill="white">41</text>
+          <text x="640" y="171" text-anchor="middle" font-family="Inter" font-weight="600" font-size="14" fill="white">45</text>
 
-          <rect x="395" y="185" width="36" height="26" rx="5" fill="#34d399"/>
-          <text x="413" y="202" text-anchor="middle" font-family="Inter" font-size="11" fill="white">25</text>
-          <rect x="445" y="185" width="36" height="26" rx="5" fill="#34d399"/>
-          <text x="463" y="202" text-anchor="middle" font-family="Inter" font-size="11" fill="white">32</text>
-          <rect x="575" y="185" width="36" height="26" rx="5" fill="#34d399"/>
-          <text x="593" y="202" text-anchor="middle" font-family="Inter" font-size="11" fill="white">41</text>
-          <rect x="625" y="185" width="36" height="26" rx="5" fill="#34d399"/>
-          <text x="643" y="202" text-anchor="middle" font-family="Inter" font-size="11" fill="white">45</text>
+          <line x1="550" y1="122" x2="410" y2="150" stroke="#059669" stroke-width="1.5"/>
+          <line x1="550" y1="122" x2="590" y2="150" stroke="#059669" stroke-width="1.5"/>
 
-          <!-- Lines -->
-          <line x1="530" y1="108" x2="450" y2="130" stroke="#059669" stroke-width="1.5"/>
-          <line x1="530" y1="108" x2="610" y2="130" stroke="#059669" stroke-width="1.5"/>
-          <line x1="450" y1="158" x2="413" y2="185" stroke="#10b981" stroke-width="1.5"/>
-          <line x1="450" y1="158" x2="463" y2="185" stroke="#10b981" stroke-width="1.5"/>
-          <line x1="610" y1="158" x2="593" y2="185" stroke="#10b981" stroke-width="1.5"/>
-          <line x1="610" y1="158" x2="643" y2="185" stroke="#10b981" stroke-width="1.5"/>
+          <line x1="410" y1="182" x2="390" y2="150" stroke="#10b981" stroke-width="1.5"/>
+          <line x1="410" y1="182" x2="430" y2="150" stroke="#10b981" stroke-width="1.5"/>
+          <line x1="590" y1="182" x2="560" y2="150" stroke="#10b981" stroke-width="1.5"/>
+          <line x1="620" y1="182" x2="600" y2="150" stroke="#10b981" stroke-width="1.5"/>
+          <line x1="660" y1="182" x2="640" y2="150" stroke="#10b981" stroke-width="1.5"/>
 
-          <!-- Arrow to target -->
-          <line x1="450" y1="211" x2="450" y2="260" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 3"/>
-          <polygon points="445,255 450,265 455,255" fill="#f59e0b"/>
+          <line x1="550" y1="122" x2="590" y2="150" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 3"/>
+          <circle cx="590" cy="150" r="8" fill="rgba(245,158,11,0.2)"/>
 
-          <rect x="400" y="268" width="100" height="28" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
-          <text x="450" y="286" text-anchor="middle" font-family="Inter" font-weight="600" font-size="12" fill="#92400e">Виктор, 28</text>
+          <text x="530" y="238" text-anchor="middle" font-family="Inter" font-size="11" fill="#475569">Шаг 1: сравнить с 32 — идти направо</text>
+          <text x="530" y="254" text-anchor="middle" font-family="Inter" font-size="11" fill="#475569">Шаг 2: найти 41 внутри узла [38, 41, 45]</text>
+
+          <rect x="500" y="270" width="140" height="28" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="570" y="289" text-anchor="middle" font-family="Inter" font-weight="600" font-size="12" fill="#92400e">Елена, 41</text>
         </svg>
-        <p style="font-size:13px;color:var(--gray-500);margin-top:12px;margin-bottom:0;">Слева: полный перебор всех строк. Справа: B-дерево позволяет найти значение за O(log n) шагов</p>
+        <p style="font-size:13px;color:var(--gray-500);margin-top:12px;margin-bottom:0;">Слева: полный перебор всех строк. Справа: сбалансированное дерево поиска позволяет найти значение за O(log n) шагов</p>
       </div>
 
       <div class="info-box warning">
