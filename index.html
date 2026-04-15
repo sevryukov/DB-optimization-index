@@ -112,6 +112,19 @@
     display: grid;
     grid-template-columns: 280px 1fr;
     min-height: calc(100vh - 64px);
+    transition: grid-template-columns 0.3s ease, max-width 0.3s ease;
+  }
+
+  .collapsed .layout {
+    grid-template-columns: 0 1fr;
+    max-width: none;
+  }
+
+  .collapsed .sidebar {
+    width: 0;
+    padding: 0;
+    border: none;
+    overflow: hidden;
   }
 
   /* Sidebar */
@@ -123,6 +136,7 @@
     top: 64px;
     height: calc(100vh - 64px);
     overflow-y: auto;
+    transition: width 0.3s ease, padding 0.3s ease, border 0.3s ease;
   }
 
   .sidebar::-webkit-scrollbar { width: 4px; }
@@ -907,6 +921,30 @@
     justify-content: center;
   }
 
+  /* Desktop sidebar toggle */
+  .sidebar-toggle-desktop {
+    display: flex;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    margin-right: 12px;
+  }
+
+  .sidebar-toggle-desktop:hover {
+    background: rgba(255,255,255,0.2);
+  }
+
+  .collapsed .sidebar-toggle-desktop svg {
+    transform: rotate(180deg);
+  }
+
   .sidebar-overlay {
     display: none;
     position: fixed;
@@ -917,6 +955,8 @@
 
   /* Responsive */
   @media (max-width: 900px) {
+    .sidebar-toggle-desktop { display: none; }
+
     .layout {
       grid-template-columns: 1fr;
     }
@@ -967,6 +1007,11 @@
 <!-- Header -->
 <header class="header">
   <div class="header-inner">
+    <button class="sidebar-toggle-desktop" id="sidebarToggleDesktop" onclick="toggleSidebarDesktop()" aria-label="Свернуть меню">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
     <div class="header-title">
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
         <rect width="28" height="28" rx="7" fill="rgba(255,255,255,0.15)"/>
@@ -2518,6 +2563,10 @@
   function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('open');
     document.getElementById('sidebarOverlay').classList.toggle('open');
+  }
+
+  function toggleSidebarDesktop() {
+    document.body.classList.toggle('collapsed');
   }
 
   // Quiz system
