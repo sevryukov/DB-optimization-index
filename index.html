@@ -336,8 +336,8 @@
 
   /* Code blocks */
   .code-block {
-    background: var(--gray-900);
-    color: #e2e8f0;
+    background: var(--gray-100);
+    color: var(--gray-900);
     border-radius: var(--radius-sm);
     padding: 20px 24px;
     margin: 16px 0;
@@ -359,12 +359,12 @@
     font-weight: 600;
   }
 
-  .code-block .kw { color: #c084fc; }
-  .code-block .fn { color: #67e8f9; }
-  .code-block .str { color: #86efac; }
-  .code-block .cm { color: #64748b; font-style: italic; }
-  .code-block .num { color: #fbbf24; }
-  .code-block .op { color: #f472b6; }
+  .code-block .kw { color: #7c3aed; }
+  .code-block .fn { color: #0891b2; }
+  .code-block .str { color: #059669; }
+  .code-block .cm { color: var(--gray-600); font-style: italic; }
+  .code-block .num { color: #d97706; }
+  .code-block .op { color: #dc2626; }
 
   /* Info boxes */
   .info-box {
@@ -1279,12 +1279,11 @@
         </div>
         <div class="code-block">
           <span class="code-label">SQL</span>
-<span class="cm">-- Создание индекса по одному столбцу</span>
-<span class="kw">CREATE INDEX</span> idx_employees_email
-<span class="kw">ON</span> employees (email);
-
-<span class="cm">-- Индекс автоматически используется при:</span>
-<span class="kw">SELECT</span> * <span class="kw">FROM</span> employees
+<span class="cm">-- Создание индекса по одному столбцу</span><br><br>
+<span class="kw">CREATE INDEX</span> idx_employees_email<br>
+<span class="kw">ON</span> employees (email);<br><br>
+<span class="cm">-- Индекс автоматически используется при:</span><br><br>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> employees<br>
 <span class="kw">WHERE</span> email = <span class="str">'ivan@example.com'</span>;
         </div>
       </div>
@@ -1391,16 +1390,14 @@
         </div>
         <div class="code-block">
           <span class="code-label">SQL</span>
-<span class="cm">-- Композитный индекс: сначала department, потом salary</span>
-<span class="kw">CREATE INDEX</span> idx_emp_dept_salary
-<span class="kw">ON</span> employees (department, salary);
-
-<span class="cm">-- Этот индекс эффективен для запросов:</span>
-<span class="kw">SELECT</span> * <span class="kw">FROM</span> employees
-<span class="kw">WHERE</span> department = <span class="str">'IT'</span> <span class="kw">AND</span> salary > <span class="num">100000</span>;
-
-<span class="cm">-- Также работает для поиска только по department:</span>
-<span class="kw">SELECT</span> * <span class="kw">FROM</span> employees
+<span class="cm">-- Композитный индекс: сначала department, потом salary</span><br><br>
+<span class="kw">CREATE INDEX</span> idx_emp_dept_salary<br>
+<span class="kw">ON</span> employees (department, salary);<br><br>
+<span class="cm">-- Этот индекс эффективен для запросов:</span><br><br>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> employees<br>
+<span class="kw">WHERE</span> department = <span class="str">'IT'</span> <span class="kw">AND</span> salary > <span class="num">100000</span>;<br><br>
+<span class="cm">-- Также работает для поиска только по department:</span><br><br>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> employees<br>
 <span class="kw">WHERE</span> department = <span class="str">'IT'</span>;
         </div>
       </div>
@@ -1515,15 +1512,13 @@
         </div>
         <div class="code-block">
           <span class="code-label">PostgreSQL</span>
-<span class="cm">-- Без индекса: функция UPPER() на каждой строке</span>
-<span class="cm">-- это приводит к полному сканированию!</span>
-<span class="kw">SELECT</span> * <span class="kw">FROM</span> users
-<span class="kw">WHERE</span> <span class="fn">UPPER</span>(name) = <span class="str">'ИВАНОВ'</span>;
-
-<span class="cm">-- Создаём индекс по выражению</span>
-<span class="kw">CREATE INDEX</span> idx_users_name_upper
-<span class="kw">ON</span> users (<span class="fn">UPPER</span>(name));
-
+<span class="cm">-- Без индекса: функция UPPER() на каждой строке</span><br>
+<span class="cm">-- это приводит к полному сканированию!</span><br><br>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> users<br>
+<span class="kw">WHERE</span> <span class="fn">UPPER</span>(name) = <span class="str">'ИВАНОВ'</span>;<br><br>
+<span class="cm">-- Создаём индекс по выражению</span><br><br>
+<span class="kw">CREATE INDEX</span> idx_users_name_upper<br>
+<span class="kw">ON</span> users (<span class="fn">UPPER</span>(name));<br><br>
 <span class="cm">-- Теперь запрос использует индекс!</span>
         </div>
       </div>
@@ -1539,20 +1534,17 @@
         </div>
         <div class="code-block">
           <span class="code-label">SQL</span>
-<span class="cm">-- 1. Индекс по году даты</span>
-<span class="kw">CREATE INDEX</span> idx_orders_year
-<span class="kw">ON</span> orders (<span class="fn">EXTRACT</span>(year <span class="kw">FROM</span> order_date));
-
-<span class="cm">-- 2. Индекс по длине строки</span>
-<span class="kw">CREATE INDEX</span> idx_articles_title_len
-<span class="kw">ON</span> articles (<span class="fn">LENGTH</span>(title));
-
-<span class="cm">-- 3. Индекс по JSON-полю (PostgreSQL)</span>
-<span class="kw">CREATE INDEX</span> idx_users_data_email
-<span class="kw">ON</span> users ((data->><span class="str">'email'</span>));
-
-<span class="cm">-- 4. Индекс по географическим координатам</span>
-<span class="kw">CREATE INDEX</span> idx_places_location
+<span class="cm">-- 1. Индекс по году даты</span><br><br>
+<span class="kw">CREATE INDEX</span> idx_orders_year<br>
+<span class="kw">ON</span> orders (<span class="fn">EXTRACT</span>(year <span class="kw">FROM</span> order_date));<br><br>
+<span class="cm">-- 2. Индекс по длине строки</span><br><br>
+<span class="kw">CREATE INDEX</span> idx_articles_title_len<br>
+<span class="kw">ON</span> articles (<span class="fn">LENGTH</span>(title));<br><br>
+<span class="cm">-- 3. Индекс по JSON-полю (PostgreSQL)</span><br><br>
+<span class="kw">CREATE INDEX</span> idx_users_data_email<br>
+<span class="kw">ON</span> users ((data->><span class="str">'email'</span>));<br><br>
+<span class="cm">-- 4. Индекс по географическим координатам</span><br><br>
+<span class="kw">CREATE INDEX</span> idx_places_location<br>
 <span class="kw">ON</span> places <span class="kw">USING</span> <span class="fn">gist</span> (location);
         </div>
       </div>
@@ -1621,16 +1613,14 @@
 <span class="cm">-- Индекс только для активных пользователей</span>
 <span class="kw">CREATE INDEX</span> idx_users_active_email
 <span class="kw">ON</span> users (email)
-<span class="kw">WHERE</span> status = <span class="str">'active'</span>;
-
-<span class="cm">-- Индекс только для незавершённых заказов</span>
-<span class="kw">CREATE INDEX</span> idx_orders_pending
-<span class="kw">ON</span> orders (created_at)
-<span class="kw">WHERE</span> status <span class="kw">IN</span> (<span class="str">'pending'</span>, <span class="str">'processing'</span>);
-
-<span class="cm">-- Индекс для заказов с высокой суммой</span>
-<span class="kw">CREATE INDEX</span> idx_orders_premium
-<span class="kw">ON</span> orders (customer_id, total)
+<span class="kw">WHERE</span> status = <span class="str">'active'</span>;<br><br>
+<span class="cm">-- Индекс только для незавершённых заказов</span><br><br>
+<span class="kw">CREATE INDEX</span> idx_orders_pending<br>
+<span class="kw">ON</span> orders (created_at)<br>
+<span class="kw">WHERE</span> status <span class="kw">IN</span> (<span class="str">'pending'</span>, <span class="str">'processing'</span>);<br><br>
+<span class="cm">-- Индекс для заказов с высокой суммой</span><br><br>
+<span class="kw">CREATE INDEX</span> idx_orders_premium<br>
+<span class="kw">ON</span> orders (customer_id, total)<br>
 <span class="kw">WHERE</span> total > <span class="num">10000</span>;
         </div>
       </div>
@@ -1740,14 +1730,13 @@
 <span class="kw">CREATE INDEX</span> idx_users_email
 <span class="kw">ON</span> users (email);
 
-<span class="cm">-- С INCLUDE: все нужные данные уже в индексе</span>
-<span class="cm">-- → только поиск в индексе (covering index)</span>
-<span class="kw">CREATE INDEX</span> idx_users_email_covering
-<span class="kw">ON</span> users (email)
-<span class="kw">INCLUDE</span> (name, phone);
-
-<span class="cm">-- Запрос полностью покрывается индексом:</span>
-<span class="kw">SELECT</span> name, phone <span class="kw">FROM</span> users
+<span class="cm">-- С INCLUDE: все нужные данные уже в индексе</span><br>
+<span class="cm">-- → только поиск в индексе (covering index)</span><br><br>
+<span class="kw">CREATE INDEX</span> idx_users_email_covering<br>
+<span class="kw">ON</span> users (email)<br>
+<span class="kw">INCLUDE</span> (name, phone);<br><br>
+<span class="cm">-- Запрос полностью покрывается индексом:</span><br><br>
+<span class="kw">SELECT</span> name, phone <span class="kw">FROM</span> users<br>
 <span class="kw">WHERE</span> email = <span class="str">'ivan@example.com'</span>;
         </div>
       </div>
@@ -2023,17 +2012,15 @@
         </div>
         <p style="font-size:14px;color:var(--gray-600);margin:0 0 12px;">Также важна селективность самого запроса — сколько строк он возвращает:</p>
         <div class="code-block">
-<span class="cm">Таблица orders: 1 000 000 строк</span>
-
-<span class="cm">-- Высокая селективность запроса (хорошо для индекса)</span>
-<span class="kw">SELECT</span> * <span class="kw">FROM</span> orders
-<span class="kw">WHERE</span> id = <span class="num">42</span>;
-<span class="cm">-- Возвращает 1 строку из 1 000 000 → 0.0001%</span>
-
-<span class="cm">-- Низкая селективность запроса (плохо для индекса)</span>
-<span class="kw">SELECT</span> * <span class="kw">FROM</span> orders
-<span class="kw">WHERE</span> status = <span class="str">'completed'</span>;
-<span class="cm">-- Возвращает 900 000 строк → 90%</span>
+<span class="cm">Таблица orders: 1 000 000 строк</span><br><br>
+<span class="cm">-- Высокая селективность запроса (хорошо для индекса)</span><br><br>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> orders<br>
+<span class="kw">WHERE</span> id = <span class="num">42</span>;<br>
+<span class="cm">-- Возвращает 1 строку из 1 000 000 → 0.0001%</span><br><br>
+<span class="cm">-- Низкая селективность запроса (плохо для индекса)</span><br><br>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> orders<br>
+<span class="kw">WHERE</span> status = <span class="str">'completed'</span>;<br>
+<span class="cm">-- Возвращает 900 000 строк → 90%</span><br>
 <span class="cm">-- Полное сканирование будет быстрее!</span>
         </div>
       </div>
